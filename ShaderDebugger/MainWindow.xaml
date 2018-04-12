@@ -5,8 +5,128 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShaderDebugger"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
         
+        xmlns:sharpGL="clr-namespace:SharpGL.WPF;assembly=SharpGL.WPF"
+        
+        Title="MainWindow" Height="600" Width="1200">
+    <Window.Resources>
+        <Style x:Key="headerTextStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Lime"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
+        <Style x:Key="codeEditorTextBox" TargetType="TextBox">
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="AcceptsTab" Value="True"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="0.6*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="0.14*"/>
+        </Grid.RowDefinitions>
+        <!-- User input part of the window -->
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <DockPanel Grid.Column="0">
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Vertex shader"/>
+                    <TextBox x:Name="vertexShaderTextBox" Style="{StaticResource codeEditorTextBox}" xml:space="preserve">
+in vec3 aPos; // the position variable has attribute position 0
+  
+out vec4 vertexColor; // specify a color output to the fragment shader
+
+void main()
+{
+    gl_Position = vec4(aPos, 1.0); // see how we directly give a vec3 to vec4's constructor
+    vertexColor = vec4(0.5, 0.0, 0.0, 1.0); // set the output variable to a dark-red color
+}
+                    </TextBox>
+                </DockPanel>
+                <GridSplitter Grid.Column="1" Width="5" ResizeBehavior="PreviousAndNext"/>
+                <DockPanel Grid.Column="2">
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Fragment shader"/>
+                    <TextBox x:Name="fragmentShaderTextBox" Style="{StaticResource codeEditorTextBox}" xml:space="preserve">
+out vec4 FragColor;
+  
+in vec4 vertexColor; // the input variable from the vertex shader (same name and same type)  
+
+void main()
+{
+    FragColor = vertexColor;
+}
+                    </TextBox>
+                </DockPanel>
+            </Grid>
+            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"/>
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <DockPanel Grid.Column="0">
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Attributes"/>
+                    <Button DockPanel.Dock="Bottom" x:Name="newAttributeButton" Content="New attribute"/>
+                    <ListBox x:Name="attributesListBox">
+                        <ListBoxItem>attr0</ListBoxItem>
+                        <ListBoxItem>attr1</ListBoxItem>
+                        <ListBoxItem>...</ListBoxItem>
+                    </ListBox>
+                </DockPanel>
+                <GridSplitter Grid.Column="1" Width="5" ResizeBehavior="PreviousAndNext"/>
+                <DockPanel Grid.Column="2">
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Uniforms"/>
+                    <Button DockPanel.Dock="Bottom" x:Name="newUniformButton" Content="New uniform"/>
+                    <ListBox x:Name="uniformsListBox">
+                        <ListBoxItem>uniform0</ListBoxItem>
+                        <ListBoxItem>uniform1</ListBoxItem>
+                        <ListBoxItem>...</ListBoxItem>
+                    </ListBox>
+                    
+                </DockPanel>
+            </Grid>
+        </Grid>
+
+        <!-- Render part of the window -->
+        <DockPanel Grid.Row="0" Grid.Column="1">
+            <StackPanel DockPanel.Dock="Top">
+                <TextBlock Style="{StaticResource headerTextStyle}" Text="Render Output"/>
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                <CheckBox x:Name="renderSizeStretchCheckBox"/>
+                <TextBlock Text="Stretch" Margin="3,0,10,0"/>
+                <TextBlock Text="Width"/>
+                <TextBox x:Name="renderWidthTextBox" Text="800" Margin="3,0,0,0"/>
+                <TextBlock Text="Height" Margin="5,0,0,0"/>
+                <TextBox x:Name="renderHeightTextBox" Text="600" Margin="3,0,0,0"/>
+            </StackPanel>
+            <sharpGL:OpenGLControl />
+        </DockPanel>
+        
+        <!-- Output from shader compiler etc. -->
+        <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="consoleOutputTextBox" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible">
+            Here will be compiler output
+        </TextBox>
     </Grid>
 </Window>
