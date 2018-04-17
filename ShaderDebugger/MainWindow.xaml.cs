@@ -50,6 +50,15 @@ namespace ShaderDebugger
 
             core.VertexShaderCode = vCode;
             core.FragmentShaderCode = fCode;
+
+            FloatUniform k = new FloatUniform("k");
+            k.Value = new Float { Value = 0.5f };
+
+            Vec3Uniform v = new Vec3Uniform("v");
+            v.Value = new Vec3f { X = 1.0f, Y = 0.0f, Z = 1.0f };
+
+            core.Uniforms.Add(k);
+            core.Uniforms.Add(v);
         }
 
         private void OpenGLControl_OpenGLInitialized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
@@ -65,11 +74,34 @@ namespace ShaderDebugger
             var gl = args.OpenGL;
             var core = GetCore();
 
-            gl.Viewport(0, 0, 800, 600);
-            gl.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
+            int width = (int)openGLControl.RenderSize.Width;
+            int height = (int)openGLControl.RenderSize.Height;
 
-            core.Render();
+            core.Render(width, height);
+        }
+
+        private void deleteUniformButton_Click(object sender, RoutedEventArgs e)
+        {
+            var core = GetCore();
+
+            int selectedIndex = uniformsDataGrid.SelectedIndex;
+            if (selectedIndex != -1)
+            {
+                core.Uniforms.RemoveAt(selectedIndex);
+            }
+        }
+
+        private void newUniformButton_Click(object sender, RoutedEventArgs e)
+        {
+            var core = GetCore();
+
+            AddUniformWindow window = new AddUniformWindow();
+            window.ShowDialog();
+
+            if (window.Result)
+            {
+                core.Uniforms.Add(window.NewUniform);
+            }
         }
     }
 }

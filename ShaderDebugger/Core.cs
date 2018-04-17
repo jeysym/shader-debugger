@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SharpGL;
 using SharpGL.Shaders;
+using System.Collections.ObjectModel;
 
 namespace ShaderDebugger
 {
@@ -23,23 +23,44 @@ namespace ShaderDebugger
         VerticesChanged = 8
     }
 
-    public class Core : IInitable<OpenGL>
+    public class Core : NotifyPropertyChangedBase, IInitable<OpenGL>
     {
         private string _vertexShaderCode;
         private string _fragmentShaderCode;
+        private ObservableCollection<Uniform> _uniforms;
+        private ObservableCollection<Vertex> _vertices;
+        private string _errorOutput;
 
         public string VertexShaderCode {
             get { return _vertexShaderCode; }
-            set { _vertexShaderCode = value; state |= ShaderProgramState.ShadersChanged; }
+            set { _vertexShaderCode = value; state |= ShaderProgramState.ShadersChanged; NotifyPropertyChanged(); }
         }
 
         public string FragmentShaderCode {
             get { return _fragmentShaderCode; }
-            set { _fragmentShaderCode = value;  state |= ShaderProgramState.ShadersChanged; }
+            set { _fragmentShaderCode = value; state |= ShaderProgramState.ShadersChanged; NotifyPropertyChanged(); }
         }
 
-        public IList<Uniform> uniforms { get; set; }
-        public IList<Vertex> vertices { get; set; }
+        public ObservableCollection<Uniform> Uniforms {
+            get { return _uniforms; }
+            set { _uniforms = value; NotifyPropertyChanged(); }
+        }
+
+        public ObservableCollection<Vertex> Vertices {
+            get { return _vertices; }
+            set { _vertices = value; NotifyPropertyChanged(); }
+        }
+
+        public string ErrorOutput
+        {
+            get { return _errorOutput; }
+            set { _errorOutput = value; NotifyPropertyChanged(); }
+        }
+
+        public bool WasCompiledWithoutError
+        {
+            get { return _errorOutput == null; }
+        }
 
         private OpenGL gl;
         private ShaderProgram program;
@@ -48,8 +69,21 @@ namespace ShaderDebugger
         public Core()
         {
             state = ShaderProgramState.Valid;
-            uniforms = new List<Uniform>();
-            vertices = new List<Vertex>();
+            Uniforms = new ObservableCollection<Uniform>();
+            Vertices = new ObservableCollection<Vertex>();
+
+            Uniforms.CollectionChanged += Uniforms_CollectionChanged;
+            Vertices.CollectionChanged += Vertices_CollectionChanged;
+        }
+
+        private void Vertices_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            state |= ShaderProgramState.VerticesChanged;
+        }
+
+        private void Uniforms_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            state |= ShaderProgramState.UniformsChanged;
         }
 
         public void Init(OpenGL gl)
@@ -78,10 +112,47 @@ namespace ShaderDebugger
         {
             program.Delete(gl);
 
-            var attributeLocations = new Dictionary<uint, string>();
-            program = new ShaderProgram();
-            program.Create(gl, VertexShaderCode, FragmentShaderCode, attributeLocations);
-            program.Bind(gl);
+            try
+            {
+                var attributeLocations = new Dictionary<uint, string>();
+                program = new ShaderProgram();
+                program.Create(gl, VertexShaderCode, FragmentShaderCode, attributeLocations);
+                program.Bind(gl);
+            }
+            catch (ShaderCompilationException e)
+            {
+                ErrorOutput = e.CompilerOutput;
+                program.Delete(gl);
+                return;
+            }
+
+            ErrorOutput = null;
+        }
+
+        private void ResetUniforms()
+        {
+            if (Uniforms == null)
+                return;
+
+            foreach (Uniform uniform in Uniforms)
+            {
+                int location = GetUniformLocation(uniform.Name);
+
+                if (location != -1)
+                {
+                    uniform.Location = location;
+                    uniform.Set(gl, location);
+                }
+                else
+                {
+                    uniform.Location = null;
+                }
+            }
+        }
+
+        private void RebufferVertices()
+        {
+
         }
 
         private uint vbo = 0;
@@ -115,30 +186,40 @@ namespace ShaderDebugger
             gl.BindVertexArray(0);
         }
 
-        public void Render()
+        private void CheckValidity()
         {
             if (state.HasFlag(ShaderProgramState.ShadersChanged))
             {
                 // we need to recompile shaders
                 RecompileShaders();
+                ResetUniforms();
+                RebufferVertices();
             }
-            else {
+            else
+            {
                 if (state.HasFlag(ShaderProgramState.UniformsChanged))
                 {
                     // reset uniforms
-                    foreach (Uniform uniform in uniforms)
-                    {
-                        var location = GetUniformLocation(uniform.Name);
-                        uniform.Set(gl, location);
-                    }
+                    ResetUniforms();
                 }
 
                 if (state.HasFlag(ShaderProgramState.VerticesChanged))
                 {
                     // reset vertex buffers
-                    // TODO: implement this!
+                    RebufferVertices();
                 }
             }
+
+            state = ShaderProgramState.Valid;
+        }
+
+        public void Render(int width, int height)
+        {
+            gl.Viewport(0, 0, width, height);
+            gl.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
+
+            CheckValidity();
 
             gl.BindVertexArray(vao);
             {

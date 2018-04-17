@@ -67,9 +67,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AddUniformWindow.xaml.cs">
+      <DependentUpon>AddUniformWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Core.cs" />
+    <Compile Include="NotifyPropertyChangedBase.cs" />
     <Compile Include="Uniform.cs" />
     <Compile Include="Vertex.cs" />
+    <Page Include="AddUniformWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

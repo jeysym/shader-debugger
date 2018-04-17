@@ -14,6 +14,8 @@
         x:Name="mainWindow"
         Title="MainWindow" Height="600" Width="1200" MinHeight="300" MinWidth="600">
     <Window.Resources>
+        <local:Core x:Key="core"/>
+        
         <Style x:Key="headerTextStyle" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Background" Value="Lime"/>
@@ -29,32 +31,94 @@
             <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
         </Style>
 
-        <system:String x:Key="defaultVertexShaderCode" xml:space="preserve">
-            #version 330 core
-            layout (location = 0) in vec3 position; // the position
-  
-            out vec4 vertexColor; // specify a color output to the fragment shader
+        <Style x:Key="glTypesControlsStyle" TargetType="FrameworkElement">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="2,0,5,0"/>
+        </Style>
 
-            void main()
-            {
-                gl_Position = vec4(position, 1.0); // see how we directly give a vec3 to vec4's constructor
-                vertexColor = vec4(0.5, 0.0, 0.0, 1.0); // set the output variable to a dark-red color
-            }
+        <system:String x:Key="defaultVertexShaderCode" xml:space="preserve">
+#version 330 core
+layout (location = 0) in vec3 position; // the position
+  
+out vec4 vertexColor; // specify a color output to the fragment shader
+
+void main()
+{
+    gl_Position = vec4(position, 1.0); // see how we directly give a vec3 to vec4's constructor
+    vertexColor = vec4(0.5, 0.0, 0.0, 1.0); // set the output variable to a dark-red color
+}
         </system:String>
         
         <system:String x:Key="defaultFragmentShaderCode" xml:space="preserve">
-            #version 330 core
-            out vec4 FragColor;
+#version 330 core
+out vec4 FragColor;
   
-            in vec4 vertexColor; // the input variable from the vertex shader (same name and same type)  
+in vec4 vertexColor; // the input variable from the vertex shader (same name and same type)  
 
-            void main()
-            {
-                FragColor = vertexColor;
-            }
+void main()
+{
+    FragColor = vertexColor;
+}
         </system:String>
 
-        <local:Core x:Key="core"/>
+        <DataTemplate DataType="{x:Type local:Float}">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left" Text="Value" Style="{StaticResource glTypesControlsStyle}"/>
+                <TextBox Text="{Binding Mode=TwoWay, Path=Value}" TextAlignment="Right" Style="{StaticResource glTypesControlsStyle}"/>
+            </DockPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type local:Vec2f}">
+            <UniformGrid Rows="1" Columns="2">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Text="X" Style="{StaticResource glTypesControlsStyle}"/>
+                    <TextBox Text="{Binding Mode=TwoWay, Path=X}" TextAlignment="Right" Style="{StaticResource glTypesControlsStyle}"/>
+                </DockPanel>
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Text="Y" Style="{StaticResource glTypesControlsStyle}"/>
+                    <TextBox Text="{Binding Mode=TwoWay, Path=Y}" TextAlignment="Right" Style="{StaticResource glTypesControlsStyle}"/>
+                </DockPanel>
+            </UniformGrid>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type local:Vec3f}">
+            <UniformGrid Rows="1" Columns="3">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Text="X" Style="{StaticResource glTypesControlsStyle}"/>
+                    <TextBox Text="{Binding Mode=TwoWay, Path=X}" TextAlignment="Right" Style="{StaticResource glTypesControlsStyle}"/>
+                </DockPanel>
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Text="Y" Style="{StaticResource glTypesControlsStyle}"/>
+                    <TextBox Text="{Binding Mode=TwoWay, Path=Y}" TextAlignment="Right" Style="{StaticResource glTypesControlsStyle}"/>
+                </DockPanel>
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Text="Z" Style="{StaticResource glTypesControlsStyle}"/>
+                    <TextBox Text="{Binding Mode=TwoWay, Path=Z}" TextAlignment="Right" Style="{StaticResource glTypesControlsStyle}"/>
+                </DockPanel>
+            </UniformGrid>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type local:Vec4f}">
+            <UniformGrid Rows="1" Columns="4">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Text="X" Style="{StaticResource glTypesControlsStyle}"/>
+                    <TextBox Text="{Binding Mode=TwoWay, Path=X}" TextAlignment="Right" Style="{StaticResource glTypesControlsStyle}"/>
+                </DockPanel>
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Text="Y" Style="{StaticResource glTypesControlsStyle}"/>
+                    <TextBox Text="{Binding Mode=TwoWay, Path=Y}" TextAlignment="Right" Style="{StaticResource glTypesControlsStyle}"/>
+                </DockPanel>
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Text="Z" Style="{StaticResource glTypesControlsStyle}"/>
+                    <TextBox Text="{Binding Mode=TwoWay, Path=Z}" TextAlignment="Right" Style="{StaticResource glTypesControlsStyle}"/>
+                </DockPanel>
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Text="W" Style="{StaticResource glTypesControlsStyle}"/>
+                    <TextBox Text="{Binding Mode=TwoWay, Path=W}" TextAlignment="Right" Style="{StaticResource glTypesControlsStyle}"/>
+                </DockPanel>
+            </UniformGrid>
+        </DataTemplate>
+
     </Window.Resources>
     
     <Grid>
@@ -83,12 +147,12 @@
 
                 <DockPanel Grid.Column="0">
                     <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Vertex shader"/>
-                    <TextBox x:Name="vertexShaderTextBox" Style="{StaticResource codeEditorTextBox}" Text="{Binding Mode=OneWayToSource, Source={StaticResource core}, Path=VertexShaderCode}"/>
+                    <TextBox x:Name="vertexShaderTextBox" Style="{StaticResource codeEditorTextBox}" Text="{Binding Mode=TwoWay, Source={StaticResource core}, Path=VertexShaderCode}"/>
                 </DockPanel>
                 <GridSplitter Grid.Column="1" Width="5" ResizeBehavior="PreviousAndNext"/>
                 <DockPanel Grid.Column="2">
                     <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Fragment shader"/>
-                    <TextBox x:Name="fragmentShaderTextBox" Style="{StaticResource codeEditorTextBox}" Text="{Binding Mode=OneWayToSource, Source={StaticResource core}, Path=FragmentShaderCode}"/>
+                    <TextBox x:Name="fragmentShaderTextBox" Style="{StaticResource codeEditorTextBox}" Text="{Binding Mode=TwoWay, Source={StaticResource core}, Path=FragmentShaderCode}"/>
                 </DockPanel>
             </Grid>
             <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"/>
@@ -111,12 +175,24 @@
                 <GridSplitter Grid.Column="1" Width="5" ResizeBehavior="PreviousAndNext"/>
                 <DockPanel Grid.Column="2">
                     <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Uniforms"/>
-                    <Button DockPanel.Dock="Bottom" x:Name="newUniformButton" Content="New uniform"/>
+                    <Button DockPanel.Dock="Bottom" x:Name="deleteUniformButton" Content="Delete selected" Click="deleteUniformButton_Click"/>
+                    <Button DockPanel.Dock="Bottom" x:Name="newUniformButton" Content="New uniform" Click="newUniformButton_Click"/>
 
-                    <ListBox x:Name="uniformsListBox">
-                        <ListBoxItem>...</ListBoxItem>
-                    </ListBox>
-                    
+                    <DataGrid x:Name="uniformsDataGrid" ItemsSource="{Binding Mode=TwoWay, Source={StaticResource core}, Path=Uniforms}" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Path=Name}"/>
+                            <DataGridTextColumn Header="Location" Binding="{Binding Path=Location, TargetNullValue=N/A}" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Path=TypeDescription}" IsReadOnly="True"/>
+                            <DataGridTemplateColumn Header="Value">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ContentPresenter Content="{Binding Path=Value}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
                 </DockPanel>
             </Grid>
         </Grid>
@@ -134,12 +210,11 @@
                 <TextBlock Text="Height" Margin="5,0,0,0"/>
                 <TextBox x:Name="renderHeightTextBox" Text="600" Margin="3,0,0,0"/>
             </StackPanel>
-            <sharpGL:OpenGLControl OpenGLInitialized="OpenGLControl_OpenGLInitialized" OpenGLDraw="OpenGLControl_OpenGLDraw" OpenGLVersion="OpenGL3_3" RenderContextType="FBO"/>
+            <sharpGL:OpenGLControl x:Name="openGLControl" OpenGLInitialized="OpenGLControl_OpenGLInitialized" OpenGLDraw="OpenGLControl_OpenGLDraw" OpenGLVersion="OpenGL3_3" RenderContextType="FBO"/>
         </DockPanel>
         
         <!-- Output from shader compiler etc. -->
-        <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="consoleOutputTextBox" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible">
-            Here will be compiler output
-        </TextBox>
+        <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="consoleOutputTextBox" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible"
+                 Text="{Binding Source={StaticResource core}, Path=ErrorOutput, TargetNullValue=OK}"/>
     </Grid>
 </Window>
