@@ -59,6 +59,26 @@ namespace ShaderDebugger
 
             core.AddUniform(k);
             core.AddUniform(v);
+
+            core.AddNewVertex();
+            core.AddNewVertex();
+
+            AttributeInfo attInfo = new AttributeInfo();
+            attInfo.Name = "Vektor ctyri";
+            attInfo.Location = 42;
+            attInfo.Type = GLType.Vec4;
+            core.AddNewAttribute(attInfo);
+
+            DataGridTextColumn nameColumn = new DataGridTextColumn();
+            nameColumn.Header = attInfo.Name;
+            nameColumn.Binding = new Binding($"Attributes[{attInfo.Id}]");
+            verticesDataGrid.Columns.Add(nameColumn);
+
+
+            //Vertex vert = new Vertex();
+            //vert.Attributes.Add(attInfo.Id, attInfo.CreateNewVariable());
+
+            //core.Vertices.Add(vert);
         }
 
         private void OpenGLControl_OpenGLInitialized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
@@ -139,6 +159,31 @@ namespace ShaderDebugger
         {
             renderWidthTextBox.IsEnabled = false;
             renderHeightTextBox.IsEnabled = false;
+        }
+
+        private void deleteVerticesButton_Click(object sender, RoutedEventArgs e)
+        {
+            var core = GetCore();
+
+            while (verticesDataGrid.SelectedItems.Count > 0)
+            {
+                int selectedIndex = verticesDataGrid.SelectedIndex;
+                if (selectedIndex != -1)
+                {
+                    core.Vertices.RemoveAt(selectedIndex);
+                }
+            }
+        }
+
+        private void newVertexButton_Click(object sender, RoutedEventArgs e)
+        {
+            var core = GetCore();
+            core.AddNewVertex();
+        }
+
+        private void newAttributeButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

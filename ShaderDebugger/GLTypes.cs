@@ -114,4 +114,37 @@ namespace ShaderDebugger
             return GLType.Vec4;
         }
     }
+
+    public class VariableMaker
+    {
+        delegate GLVariable VariableCreator();
+
+        private static IDictionary<GLType, VariableCreator> creatorsDictionary;
+
+        static VariableMaker()
+        {
+            creatorsDictionary = new Dictionary<GLType, VariableCreator>();
+            creatorsDictionary.Add(GLType.Float, () => { return new Float(); });
+            creatorsDictionary.Add(GLType.Vec2, () => { return new Vec2f(); });
+            creatorsDictionary.Add(GLType.Vec3, () => { return new Vec3f(); });
+            creatorsDictionary.Add(GLType.Vec4, () => { return new Vec4f(); });
+        }
+
+        public static ICollection<GLType> GetSupportedTypes()
+        {
+            return creatorsDictionary.Keys;
+        }
+
+        public static GLVariable Make(GLType type)
+        {
+            VariableCreator creator;
+            if (creatorsDictionary.TryGetValue(type, out creator))
+            {
+                var result = creator();
+                return result;
+            }
+
+            return null;
+        }
+    }
 }

@@ -165,10 +165,15 @@ void main()
 
                 <DockPanel Grid.Column="0">
                     <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Vertices"/>
-                    <Button DockPanel.Dock="Bottom" x:Name="newAttributeButton" Content="New attribute"/>
-                    <DataGrid>
+                    <UniformGrid DockPanel.Dock="Bottom" Columns="3">
+                        <Button x:Name="deleteVerticesButton" Content="Delete selected" Click="deleteVerticesButton_Click"/>
+                        <Button DockPanel.Dock="Bottom" x:Name="newVertexButton" Content="New vertex" Click="newVertexButton_Click"/>
+                        <Button DockPanel.Dock="Bottom" x:Name="newAttributeButton" Content="New attribute" Click="newAttributeButton_Click"/>
+                    </UniformGrid>
+
+                    <DataGrid x:Name="verticesDataGrid" ItemsSource="{Binding Mode=TwoWay, Source={StaticResource core}, Path=Vertices}" AutoGenerateColumns="False" CanUserAddRows="False">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="" />
+                            <DataGridTextColumn Header="Ahoj"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>

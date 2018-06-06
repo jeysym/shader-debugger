@@ -35,6 +35,7 @@ namespace ShaderDebugger
         private string _fragmentShaderCode;
         private ObservableCollection<Uniform> _uniforms;
         private ObservableCollection<Vertex> _vertices;
+        private Dictionary<string, AttributeInfo> _attributeInfos;
         private string _errorOutput;
 
         // OTHER FIELDS
@@ -42,7 +43,7 @@ namespace ShaderDebugger
         private OpenGL gl;
         private ShaderProgram program;
         private ShaderProgramState state;
-
+        private int nextAttributeId = 0;
 
         // ====================================================================
         // PROPERTIES
@@ -68,6 +69,12 @@ namespace ShaderDebugger
             set { _vertices = value; NotifyPropertyChanged(); }
         }
 
+        public Dictionary<string, AttributeInfo> AttributeInfos
+        {
+            get { return _attributeInfos; }
+            set { _attributeInfos = value; NotifyPropertyChanged(); }
+        }
+
         public string ErrorOutput
         {
             get { return _errorOutput; }
@@ -91,6 +98,43 @@ namespace ShaderDebugger
             newUniform.PropertyChanged += OnUniformChange;
         }
 
+        public void AddNewVertex()
+        {
+            Vertex vertex = new Vertex();
+            
+            foreach (var pair in AttributeInfos)
+            {
+                var attributeInfo = pair.Value;
+                vertex.Attributes.Add(attributeInfo.Id, attributeInfo.CreateNewVariable());
+            }
+
+            Vertices.Add(vertex);
+        }
+
+        public void AddNewAttribute(AttributeInfo attributeInfo)
+        {
+            string id = nextAttributeId.ToString();
+            attributeInfo.Id = id;
+            nextAttributeId++;
+
+            AttributeInfos.Add(id, attributeInfo);
+            foreach (Vertex vertex in Vertices) {
+                var newVariable = attributeInfo.CreateNewVariable();
+                newVariable.PropertyChanged += OnAttributeChange;
+                vertex.Attributes.Add(id, newVariable);
+            }
+        }
+
+        public void RemoveAttribute(string id)
+        {
+            AttributeInfos.Remove(id);
+
+            foreach (Vertex vertex in Vertices)
+            {
+                vertex.Attributes.Remove(id);
+            }
+        }
+
         
         // ====================================================================
         // HANDLING CHANGES
@@ -108,11 +152,15 @@ namespace ShaderDebugger
             state |= ShaderProgramState.UniformsChanged;
         }
 
-        private void Vertices_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void OnVertexCollectionChange(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             state |= ShaderProgramState.VerticesChanged;
         }
 
+        private void OnAttributeChange(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            state |= ShaderProgramState.VerticesChanged;
+        }
 
 
         public Core()
@@ -120,11 +168,11 @@ namespace ShaderDebugger
             state = ShaderProgramState.Valid;
             Uniforms = new ObservableCollection<Uniform>();
             Vertices = new ObservableCollection<Vertex>();
+            AttributeInfos = new Dictionary<string, AttributeInfo>();
 
             Uniforms.CollectionChanged += OnUniformCollectionChange;
-            Vertices.CollectionChanged += Vertices_CollectionChanged;
+            Vertices.CollectionChanged += OnVertexCollectionChange;
         }
-
 
         public void Init(OpenGL gl)
         {
