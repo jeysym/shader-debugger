@@ -25,11 +25,28 @@ namespace ShaderDebugger
 
     public class Core : NotifyPropertyChangedBase, IInitable<OpenGL>
     {
+        // ====================================================================
+        // PRIVATE FIELDS
+        // ====================================================================
+
+        // PROPERTY FIELDS
+        
         private string _vertexShaderCode;
         private string _fragmentShaderCode;
         private ObservableCollection<Uniform> _uniforms;
         private ObservableCollection<Vertex> _vertices;
         private string _errorOutput;
+
+        // OTHER FIELDS
+
+        private OpenGL gl;
+        private ShaderProgram program;
+        private ShaderProgramState state;
+
+
+        // ====================================================================
+        // PROPERTIES
+        // ====================================================================
 
         public string VertexShaderCode {
             get { return _vertexShaderCode; }
@@ -62,18 +79,33 @@ namespace ShaderDebugger
             get { return _errorOutput == null; }
         }
 
-        private OpenGL gl;
-        private ShaderProgram program;
-        private ShaderProgramState state;
 
-        public Core()
+        // ====================================================================
+        // UNIFORM / VERTEX MANIPULATION
+        // ====================================================================
+
+        public void AddUniform(Uniform newUniform)
         {
-            state = ShaderProgramState.Valid;
-            Uniforms = new ObservableCollection<Uniform>();
-            Vertices = new ObservableCollection<Vertex>();
+            Uniforms.Add(newUniform);
+            newUniform.Variable.PropertyChanged += OnUniformChange;
+            newUniform.PropertyChanged += OnUniformChange;
+        }
 
-            Uniforms.CollectionChanged += Uniforms_CollectionChanged;
-            Vertices.CollectionChanged += Vertices_CollectionChanged;
+        
+        // ====================================================================
+        // HANDLING CHANGES
+        // ====================================================================
+
+        // Is called when single uniform changes in some way.
+        private void OnUniformChange(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            state |= ShaderProgramState.UniformsChanged;
+        }
+
+        // Is called when uniform collection changes (uniform added, removed, etc.)
+        private void OnUniformCollectionChange(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            state |= ShaderProgramState.UniformsChanged;
         }
 
         private void Vertices_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -81,10 +113,18 @@ namespace ShaderDebugger
             state |= ShaderProgramState.VerticesChanged;
         }
 
-        private void Uniforms_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+
+
+        public Core()
         {
-            state |= ShaderProgramState.UniformsChanged;
+            state = ShaderProgramState.Valid;
+            Uniforms = new ObservableCollection<Uniform>();
+            Vertices = new ObservableCollection<Vertex>();
+
+            Uniforms.CollectionChanged += OnUniformCollectionChange;
+            Vertices.CollectionChanged += Vertices_CollectionChanged;
         }
+
 
         public void Init(OpenGL gl)
         {
@@ -152,7 +192,7 @@ namespace ShaderDebugger
 
         private void RebufferVertices()
         {
-
+            
         }
 
         private uint vbo = 0;

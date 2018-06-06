@@ -12,7 +12,7 @@
         xmlns:sharpGL="clr-namespace:SharpGL.WPF;assembly=SharpGL.WPF"
         
         x:Name="mainWindow"
-        Title="MainWindow" Height="600" Width="1200" MinHeight="300" MinWidth="600">
+        Title="Shader Debugger" Height="600" Width="1200" MinHeight="300" MinWidth="600">
     <Window.Resources>
         <local:Core x:Key="core"/>
         
@@ -164,20 +164,22 @@ void main()
                 </Grid.ColumnDefinitions>
 
                 <DockPanel Grid.Column="0">
-                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Attributes"/>
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Vertices"/>
                     <Button DockPanel.Dock="Bottom" x:Name="newAttributeButton" Content="New attribute"/>
-                    <ListBox x:Name="attributesListBox">
-                        <ListBoxItem>attr0</ListBoxItem>
-                        <ListBoxItem>attr1</ListBoxItem>
-                        <ListBoxItem>...</ListBoxItem>
-                    </ListBox>
+                    <DataGrid>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="" />
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </DockPanel>
                 <GridSplitter Grid.Column="1" Width="5" ResizeBehavior="PreviousAndNext"/>
                 <DockPanel Grid.Column="2">
                     <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Uniforms"/>
-                    <Button DockPanel.Dock="Bottom" x:Name="deleteUniformButton" Content="Delete selected" Click="deleteUniformButton_Click"/>
-                    <Button DockPanel.Dock="Bottom" x:Name="newUniformButton" Content="New uniform" Click="newUniformButton_Click"/>
-
+                    <UniformGrid DockPanel.Dock="Bottom" Columns="2">
+                        <Button x:Name="deleteUniformButton" Content="Delete selected" Click="deleteUniformButton_Click"/>
+                        <Button x:Name="newUniformButton" Content="New uniform" Click="newUniformButton_Click"/>
+                    </UniformGrid>
+                    
                     <DataGrid x:Name="uniformsDataGrid" ItemsSource="{Binding Mode=TwoWay, Source={StaticResource core}, Path=Uniforms}" AutoGenerateColumns="False">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Name" Binding="{Binding Path=Name}"/>
@@ -203,14 +205,16 @@ void main()
                 <TextBlock Style="{StaticResource headerTextStyle}" Text="Render Output"/>
             </StackPanel>
             <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-                <CheckBox x:Name="renderSizeStretchCheckBox"/>
-                <TextBlock Text="Stretch" Margin="3,0,10,0"/>
+                <CheckBox x:Name="renderSizeManualCheckBox" Checked="renderSizeManualCheckBox_Checked" Unchecked="renderSizeManualCheckBox_Unchecked"/>
+                <TextBlock Text="Manual size" Margin="3,0,10,0"/>
+                
                 <TextBlock Text="Width"/>
-                <TextBox x:Name="renderWidthTextBox" Text="800" Margin="3,0,0,0"/>
+                <TextBox x:Name="renderWidthTextBox" Margin="3,0,0,0" MinWidth="50" TextAlignment="Right" IsEnabled="False"/>
+                
                 <TextBlock Text="Height" Margin="5,0,0,0"/>
-                <TextBox x:Name="renderHeightTextBox" Text="600" Margin="3,0,0,0"/>
+                <TextBox x:Name="renderHeightTextBox" Margin="3,0,0,0" MinWidth="50" TextAlignment="Right" IsEnabled="False"/>
             </StackPanel>
-            <sharpGL:OpenGLControl x:Name="openGLControl" OpenGLInitialized="OpenGLControl_OpenGLInitialized" OpenGLDraw="OpenGLControl_OpenGLDraw" OpenGLVersion="OpenGL3_3" RenderContextType="FBO"/>
+            <sharpGL:OpenGLControl x:Name="openGLControl" OpenGLInitialized="OpenGLControl_OpenGLInitialized" OpenGLDraw="OpenGLControl_OpenGLDraw" OpenGLVersion="OpenGL3_3" RenderContextType="FBO" Margin="5"/>
         </DockPanel>
         
         <!-- Output from shader compiler etc. -->

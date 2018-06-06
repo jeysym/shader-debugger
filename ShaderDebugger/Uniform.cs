@@ -42,6 +42,11 @@ namespace ShaderDebugger
             get { return _Location != null; }
         }
 
+        /// <summary>
+        /// Gets the actual variable stored in this uniform.
+        /// </summary>
+        public abstract GLVariable Variable { get; }
+
         protected Uniform(string name)
         {
             Name = name;
@@ -94,6 +99,8 @@ namespace ShaderDebugger
     {
         Float _Value;
 
+        public override GLVariable Variable => _Value;
+
         public Float Value {
             get { return _Value; }
             set { _Value = value; NotifyPropertyChanged(); }
@@ -118,6 +125,8 @@ namespace ShaderDebugger
     public class Vec2Uniform : Uniform
     {
         Vec2f _Value;
+
+        public override GLVariable Variable => _Value;
 
         public Vec2f Value
         {
@@ -145,6 +154,8 @@ namespace ShaderDebugger
     {
         Vec3f _Value;
 
+        public override GLVariable Variable => _Value;
+
         public Vec3f Value
         {
             get { return _Value; }
@@ -170,6 +181,8 @@ namespace ShaderDebugger
     public class Vec4Uniform : Uniform
     {
         Vec4f _Value;
+
+        public override GLVariable Variable => _Value;
 
         public Vec4f Value
         {

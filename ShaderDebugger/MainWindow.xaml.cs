@@ -57,8 +57,8 @@ namespace ShaderDebugger
             Vec3Uniform v = new Vec3Uniform("v");
             v.Value = new Vec3f { X = 1.0f, Y = 0.0f, Z = 1.0f };
 
-            core.Uniforms.Add(k);
-            core.Uniforms.Add(v);
+            core.AddUniform(k);
+            core.AddUniform(v);
         }
 
         private void OpenGLControl_OpenGLInitialized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
@@ -74,8 +74,30 @@ namespace ShaderDebugger
             var gl = args.OpenGL;
             var core = GetCore();
 
-            int width = (int)openGLControl.RenderSize.Width;
-            int height = (int)openGLControl.RenderSize.Height;
+            bool manualRenderSize = (renderSizeManualCheckBox.IsChecked != null) ? renderSizeManualCheckBox.IsChecked.Value : false;
+            int width, height;
+            if (manualRenderSize)
+            {
+                if (int.TryParse(renderWidthTextBox.Text, out width) == false || width <= 0)
+                {
+                    width = (int)openGLControl.RenderSize.Width;
+                }
+
+                if (int.TryParse(renderHeightTextBox.Text, out height) == false || height <= 0)
+                {
+                    height = (int)openGLControl.RenderSize.Height;
+                }
+            }
+            else
+            {
+                width = (int)openGLControl.RenderSize.Width;
+                height = (int)openGLControl.RenderSize.Height;
+            }
+
+            renderWidthTextBox.Text = width.ToString();
+            renderWidthTextBox.InvalidateMeasure();
+            renderHeightTextBox.Text = height.ToString();
+            renderHeightTextBox.InvalidateMeasure();
 
             core.Render(width, height);
         }
@@ -84,10 +106,13 @@ namespace ShaderDebugger
         {
             var core = GetCore();
 
-            int selectedIndex = uniformsDataGrid.SelectedIndex;
-            if (selectedIndex != -1)
+            while (uniformsDataGrid.SelectedItems.Count > 0)
             {
-                core.Uniforms.RemoveAt(selectedIndex);
+                int selectedIndex = uniformsDataGrid.SelectedIndex;
+                if (selectedIndex != -1)
+                {
+                    core.Uniforms.RemoveAt(selectedIndex);
+                }
             }
         }
 
@@ -100,8 +125,20 @@ namespace ShaderDebugger
 
             if (window.Result)
             {
-                core.Uniforms.Add(window.NewUniform);
+                core.AddUniform(window.NewUniform);
             }
+        }
+
+        private void renderSizeManualCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            renderWidthTextBox.IsEnabled = true;
+            renderHeightTextBox.IsEnabled = true;
+        }
+
+        private void renderSizeManualCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            renderWidthTextBox.IsEnabled = false;
+            renderHeightTextBox.IsEnabled = false;
         }
     }
 }

@@ -73,6 +73,7 @@
     <Compile Include="Core.cs" />
     <Compile Include="NotifyPropertyChangedBase.cs" />
     <Compile Include="Uniform.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="Vertex.cs" />
     <Page Include="AddUniformWindow.xaml">
       <SubType>Designer</SubType>
