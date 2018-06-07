@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
 using SharpGL;
 using SharpGL.Shaders;
 using System.Collections.ObjectModel;
@@ -238,9 +239,19 @@ namespace ShaderDebugger
             }
         }
 
+        private uint floatVBO = 0;
+
         private void RebufferVertices()
         {
-            
+            //var floatAttrs = from attrValue in AttributeInfos.Values where attrValue.Type.IsFloat() select attrValue;
+            //int floatSize = 0;
+            //for (var x in floatAttrs) floatSize += x.Components();
+
+            //float[] floatData = new float[floatSize];
+            //for 
+
+            //gl.BufferData(floatVBO, )
+
         }
 
         private uint vbo = 0;

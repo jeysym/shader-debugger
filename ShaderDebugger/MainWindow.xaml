@@ -173,7 +173,6 @@ void main()
 
                     <DataGrid x:Name="verticesDataGrid" ItemsSource="{Binding Mode=TwoWay, Source={StaticResource core}, Path=Vertices}" AutoGenerateColumns="False" CanUserAddRows="False">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Ahoj"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
@@ -193,7 +192,7 @@ void main()
                             <DataGridTemplateColumn Header="Value">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <ContentPresenter Content="{Binding Path=Value}"/>
+                                        <ContentPresenter Content="{Binding Path=Variable}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

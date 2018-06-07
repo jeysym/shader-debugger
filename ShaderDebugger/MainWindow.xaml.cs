@@ -51,14 +51,11 @@ namespace ShaderDebugger
             core.VertexShaderCode = vCode;
             core.FragmentShaderCode = fCode;
 
-            FloatUniform k = new FloatUniform("k");
-            k.Value = new Float { Value = 0.5f };
-
-            Vec3Uniform v = new Vec3Uniform("v");
-            v.Value = new Vec3f { X = 1.0f, Y = 0.0f, Z = 1.0f };
+            Uniform k = new Uniform("k", new Float() { Value = 4.2f });
+            Uniform d = new Uniform("d", new Vec3f { X = 1.0f, Y = 0.0f, Z = 1.0f });
 
             core.AddUniform(k);
-            core.AddUniform(v);
+            core.AddUniform(d);
 
             core.AddNewVertex();
             core.AddNewVertex();
@@ -66,7 +63,7 @@ namespace ShaderDebugger
             AttributeInfo attInfo = new AttributeInfo();
             attInfo.Name = "Vektor ctyri";
             attInfo.Location = 42;
-            attInfo.Type = GLType.Vec4;
+            attInfo.Type = GLType.VEC3;
             core.AddNewAttribute(attInfo);
 
             DataGridTextColumn nameColumn = new DataGridTextColumn();

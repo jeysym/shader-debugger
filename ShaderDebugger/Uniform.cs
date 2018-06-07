@@ -4,10 +4,11 @@ using SharpGL;
 
 namespace ShaderDebugger
 {
-    public abstract class Uniform : NotifyPropertyChangedBase
+    public class Uniform : NotifyPropertyChangedBase
     {
         private string _Name;
         private int? _Location;
+        private GLVariable _Variable;
 
         /// <summary>
         /// Name of this uniform.
@@ -27,11 +28,19 @@ namespace ShaderDebugger
         }
 
         /// <summary>
+        /// Gets the actual variable stored in this uniform.
+        /// </summary>
+        public GLVariable Variable {
+            get { return _Variable; }
+            set { _Variable = value; NotifyPropertyChanged(); }
+        }
+
+        /// <summary>
         /// Gets string description of the uniform type. (float, vec2, vec3 etc.)
         /// </summary>
         public string TypeDescription
         {
-            get { return GetTypeDescription(); }
+            get { return Variable.GetGLType().ToString(); }
         }
 
         /// <summary>
@@ -42,14 +51,11 @@ namespace ShaderDebugger
             get { return _Location != null; }
         }
 
-        /// <summary>
-        /// Gets the actual variable stored in this uniform.
-        /// </summary>
-        public abstract GLVariable Variable { get; }
 
-        protected Uniform(string name)
+        public Uniform(string name, GLVariable variable)
         {
             Name = name;
+            Variable = variable;
         }
 
         /// <summary>
@@ -57,153 +63,24 @@ namespace ShaderDebugger
         /// </summary>
         /// <param name="gl">Represents the OpenGL context to use.</param>
         /// <param name="location">Location that this uniform value will be bound to.</param>
-        public abstract void Set(OpenGL gl, int location);
-
-        public abstract string GetTypeDescription();
+        public void Set(OpenGL gl, int location)
+        {
+            Variable.SetAsUniform(gl, location);
+        }
     }
 
-    public class UniformMaker
-    {
-        delegate Uniform UniformCreator(string name);
-
-        private static IDictionary<GLType, UniformCreator> creatorsDictionary;
-
-        static UniformMaker()
-        {
-            creatorsDictionary = new Dictionary<GLType, UniformCreator>();
-            creatorsDictionary.Add(GLType.Float, (name) => { return new FloatUniform(name); });
-            creatorsDictionary.Add(GLType.Vec2, (name) => { return new Vec2Uniform(name); });
-            creatorsDictionary.Add(GLType.Vec3, (name) => { return new Vec3Uniform(name); });
-            creatorsDictionary.Add(GLType.Vec4, (name) => { return new Vec4Uniform(name); });
-        }
-        
+    public static class UniformMaker
+    {   
         public static ICollection<GLType> GetSupportedTypes()
         {
-            return creatorsDictionary.Keys;
+            return VariableMaker.GetSupportedTypes();
         }
 
         public static Uniform Make(GLType type, string name)
         {
-            UniformCreator creator;
-            if (creatorsDictionary.TryGetValue(type, out creator))
-            {
-                var result = creator(name);
-                return result;
-            }
+            GLVariable variable = VariableMaker.Make(type);
 
-            return null;
+            return new Uniform(name, variable);
         }
     }
-
-    public class FloatUniform : Uniform
-    {
-        Float _Value;
-
-        public override GLVariable Variable => _Value;
-
-        public Float Value {
-            get { return _Value; }
-            set { _Value = value; NotifyPropertyChanged(); }
-        }
-
-        public FloatUniform(string name) : base(name)
-        {
-            Value = new Float();
-        }
-
-        public override void Set(OpenGL gl, int location)
-        {
-            gl.Uniform1(location, Value.Value);
-        }
-
-        public override string GetTypeDescription()
-        {
-            return "float";
-        }
-    }
-
-    public class Vec2Uniform : Uniform
-    {
-        Vec2f _Value;
-
-        public override GLVariable Variable => _Value;
-
-        public Vec2f Value
-        {
-            get { return _Value; }
-            set { _Value = value; NotifyPropertyChanged(); }
-        }
-
-        public Vec2Uniform(string name) : base(name)
-        {
-            Value = new Vec2f();
-        }
-
-        public override void Set(OpenGL gl, int location)
-        {
-            gl.Uniform2(location, Value.X, Value.Y);
-        }
-
-        public override string GetTypeDescription()
-        {
-            return "vec2";
-        }
-    }
-
-    public class Vec3Uniform : Uniform
-    {
-        Vec3f _Value;
-
-        public override GLVariable Variable => _Value;
-
-        public Vec3f Value
-        {
-            get { return _Value; }
-            set { _Value = value; NotifyPropertyChanged(); }
-        }
-
-        public Vec3Uniform(string name) : base(name)
-        {
-            Value = new Vec3f();
-        }
-
-        public override void Set(OpenGL gl, int location)
-        {
-            gl.Uniform3(location, Value.X, Value.Y, Value.Z);
-        }
-
-        public override string GetTypeDescription()
-        {
-            return "vec3";
-        }
-    }
-
-    public class Vec4Uniform : Uniform
-    {
-        Vec4f _Value;
-
-        public override GLVariable Variable => _Value;
-
-        public Vec4f Value
-        {
-            get { return _Value; }
-            set { _Value = value; NotifyPropertyChanged(); }
-        }
-
-        public Vec4Uniform(string name) : base(name)
-        {
-            Value = new Vec4f();
-        }
-
-        public override void Set(OpenGL gl, int location)
-        {
-            gl.Uniform4(location, Value.X, Value.Y, Value.Z, Value.W);
-        }
-
-        public override string GetTypeDescription()
-        {
-            return "vec4";
-        }
-    }
-
 }
