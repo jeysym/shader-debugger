@@ -71,7 +71,23 @@ void main()
 
         private void InitVertices()
         {
-            
+            AttributeInfo position = AttributeMaker.Make(GLType.VEC3, "position");
+            core.AddAttribute(position);
+
+            var column = MakeTemplateColumn(position);
+            verticesDataGrid.Columns.Add(column);
+
+            Vertex v0 = new Vertex();
+            Vertex v1 = new Vertex();
+            Vertex v2 = new Vertex();
+
+            v0.Attributes[position.Id] = new Vec3f() { X = -0.5f, Y = -0.5f, Z = 0.0f };
+            v1.Attributes[position.Id] = new Vec3f() { X = 0.5f, Y = -0.5f, Z = 0.0f };
+            v2.Attributes[position.Id] = new Vec3f() { X = 0.5f, Y = 0.5f, Z = 0.0f };
+
+            core.Vertices.Add(v0);
+            core.Vertices.Add(v1);
+            core.Vertices.Add(v2);
         }
 
         public MainWindow()

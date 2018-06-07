@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-//using System.Linq;
+using System.Linq;
 using SharpGL;
 using SharpGL.Shaders;
 using System.Collections.ObjectModel;
@@ -44,6 +44,9 @@ namespace ShaderDebugger
         private OpenGL gl;
         private ShaderProgram program;
         private ShaderProgramState state;
+
+        private uint mainVAO = 0;
+        private uint floatVBO = 0;
 
 
         // ==================================================================================================
@@ -233,6 +236,8 @@ namespace ShaderDebugger
                             {
                                 vertex.Attributes.Add(attributeInfo.Id, attributeInfo.CreateNewVariable());
                             }
+
+                            vertex.Attributes[attributeInfo.Id].PropertyChanged += OnVertexChange;
                         }
                     }
                     break;
@@ -248,13 +253,29 @@ namespace ShaderDebugger
 
         public Core()
         {
-            state = ShaderProgramState.Valid;
+            state |= ShaderProgramState.ShadersChanged;
+            state |= ShaderProgramState.UniformsChanged;
+            state |= ShaderProgramState.VerticesChanged;
+
             Uniforms = new ObservableCollection<Uniform>();
             _Vertices = new ObservableCollection<Vertex>();
             _AttributeInfos = new Dictionary<string, AttributeInfo>();
 
             Uniforms.CollectionChanged += OnUniformCollectionChange;
             Vertices.CollectionChanged += OnVertexCollectionChange;
+        }
+
+        public void GenerateBuffers()
+        {
+            uint[] temp = new uint[1];
+
+            // create VBOs
+            gl.GenBuffers(1, temp);
+            floatVBO = temp[0];
+
+            // create VAO
+            gl.GenVertexArrays(1, temp);
+            mainVAO = temp[0];
         }
 
         public void Init(OpenGL gl)
@@ -266,7 +287,7 @@ namespace ShaderDebugger
             program.Create(gl, VertexShaderCode, FragmentShaderCode, attributeLocations);
             program.Bind(gl);
 
-            DebugCreateArrays();    // TODO : only for debug purposes
+            GenerateBuffers();
         }
 
         public bool IsInitialized()
@@ -277,6 +298,11 @@ namespace ShaderDebugger
         private int GetUniformLocation(string uniformName)
         {
             return program.GetUniformLocation(gl, uniformName);
+        }
+
+        private int GetAttributeLocation(string attributeName)
+        {
+            return gl.GetAttribLocation(program.ShaderProgramObject, attributeName);
         }
 
         private void RecompileShaders()
@@ -321,48 +347,82 @@ namespace ShaderDebugger
             }
         }
 
-        private uint floatVBO = 0;
+        private void RebufferFloats()
+        {
+            var floatAttrs = from attrInfo in AttributeInfos.Values
+                             where attrInfo.Type.BaseType == GLBaseType.Float
+                             select attrInfo;
+
+            // Update attribute location.
+            foreach (var floatAttr in floatAttrs)
+            {
+                int location = GetAttributeLocation(floatAttr.Name);
+                if (location != -1)
+                {
+                    floatAttr.Location = location;
+                }
+                else
+                {
+                    floatAttr.Location = null;
+                }
+            }
+
+            var validFloatAttrs = from floatAttr in floatAttrs
+                                  where floatAttr.HasValidLocation
+                                  select floatAttr;
+
+            int stride = 0;
+            int bufferSize = 0;
+
+            foreach (var floatAttr in validFloatAttrs)
+            {
+                stride += floatAttr.Type.GetComponentCount() * sizeof(float);
+                bufferSize += floatAttr.Type.GetComponentCount() * Vertices.Count;
+            }
+
+            float[] bufferData = new float[bufferSize];
+            int currentIndex = 0;
+            for (int iVertex = 0; iVertex < Vertices.Count; ++iVertex)
+            {
+                Vertex vertex = Vertices[iVertex];
+                foreach (var floatAttr in validFloatAttrs)
+                {
+                    floatAttr.WriteToFloatBuffer(vertex, bufferData, currentIndex);
+                    currentIndex += floatAttr.Type.GetComponentCount();
+                }
+            }
+
+            gl.BindBuffer(OpenGL.GL_ARRAY_BUFFER, floatVBO);
+            {
+                gl.BufferData(OpenGL.GL_ARRAY_BUFFER, bufferData, OpenGL.GL_STATIC_DRAW);
+
+                int startIndex = 0;
+                foreach (var floatAttr in validFloatAttrs)
+                {
+                    uint location = (uint)floatAttr.Location.Value;
+                    int size = floatAttr.Type.GetComponentCount();
+
+                    gl.VertexAttribPointer(
+                        location, 
+                        size, 
+                        OpenGL.GL_FLOAT, 
+                        false, 
+                        stride, 
+                        (IntPtr)startIndex);
+
+                    gl.EnableVertexAttribArray(location);
+
+                    startIndex += size * sizeof(float);
+                }
+            }
+            gl.BindBuffer(OpenGL.GL_ARRAY_BUFFER, 0);
+        }
 
         private void RebufferVertices()
         {
-            //var floatAttrs = from attrValue in AttributeInfos.Values where attrValue.Type.IsFloat() select attrValue;
-            //int floatSize = 0;
-            //for (var x in floatAttrs) floatSize += x.Components();
-
-            //float[] floatData = new float[floatSize];
-            //for 
-
-            //gl.BufferData(floatVBO, )
-
-        }
-
-        private uint vbo = 0;
-        private uint vao = 0;
-
-        private float[] data = {
-            -0.5f, -0.5f, 0.0f,
-             0.5f, -0.5f, 0.0f,
-             0.0f,  0.5f, 0.0f
-        };
-
-        private void DebugCreateArrays()
-        {
-            uint[] temp = new uint[1];
-
-            // create VBO
-            gl.GenBuffers(1, temp);
-            vbo = temp[0];
-
-            // create VAO
-            gl.GenVertexArrays(1, temp);
-            vao = temp[0];
-
-            gl.BindVertexArray(vao);
+            gl.BindVertexArray(mainVAO);
             {
-                gl.BindBuffer(OpenGL.GL_ARRAY_BUFFER, vbo);
-                gl.BufferData(OpenGL.GL_ARRAY_BUFFER, data, OpenGL.GL_STATIC_DRAW);
-                gl.VertexAttribPointer(0, 3, OpenGL.GL_FLOAT, false, 3 * sizeof(float), (IntPtr)0);
-                gl.EnableVertexAttribArray(0);
+                RebufferFloats();
             }
             gl.BindVertexArray(0);
         }
@@ -396,13 +456,13 @@ namespace ShaderDebugger
 
         public void Render(int width, int height)
         {
+            CheckValidity();
+
             gl.Viewport(0, 0, width, height);
             gl.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
 
-            CheckValidity();
-
-            gl.BindVertexArray(vao);
+            gl.BindVertexArray(mainVAO);
             {
                 gl.DrawArrays(OpenGL.GL_TRIANGLES, 0, 3);
                 gl.Finish();

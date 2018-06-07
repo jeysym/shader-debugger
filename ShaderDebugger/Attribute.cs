@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using SharpGL;
 
 namespace ShaderDebugger
 {
@@ -73,6 +74,46 @@ namespace ShaderDebugger
         public GLVariable CreateNewVariable()
         {
             return VariableMaker.Make(Type);
+        }
+
+        public void WriteToFloatBuffer(Vertex vertex, float[] buffer, int where)
+        {
+            if (Type.BaseType != GLBaseType.Float)
+                throw new Exception("This attribute is not float based!");
+
+            GLVariable vertexVar = vertex.Attributes[Id];
+
+            switch (Type.ComponentCount)
+            {
+                case GLComponentCount.One:
+                    {
+                        Float variable = (Float)vertexVar;
+                        buffer[where] = variable.Value;
+                    } break;
+                case GLComponentCount.Two:
+                    {
+                        Vec2f variable = (Vec2f)vertexVar;
+                        buffer[where    ] = variable.X;
+                        buffer[where + 1] = variable.Y;
+                    } break;
+                case GLComponentCount.Three:
+                    {
+                        Vec3f variable = (Vec3f)vertexVar;
+                        buffer[where    ] = variable.X;
+                        buffer[where + 1] = variable.Y;
+                        buffer[where + 2] = variable.Z;
+                    } break;
+                case GLComponentCount.Four:
+                    {
+                        Vec4f variable = (Vec4f)vertexVar;
+                        buffer[where    ] = variable.X;
+                        buffer[where + 1] = variable.Y;
+                        buffer[where + 2] = variable.Z;
+                        buffer[where + 3] = variable.W;
+                    } break;
+                default:
+                    throw new Exception("This code should be unreachable!");
+            }
         }
     }
 
