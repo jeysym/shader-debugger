@@ -36,30 +36,9 @@
             <Setter Property="Margin" Value="2,0,5,0"/>
         </Style>
 
-        <system:String x:Key="defaultVertexShaderCode" xml:space="preserve">
-#version 330 core
-layout (location = 0) in vec3 position; // the position
-  
-out vec4 vertexColor; // specify a color output to the fragment shader
-
-void main()
-{
-    gl_Position = vec4(position, 1.0); // see how we directly give a vec3 to vec4's constructor
-    vertexColor = vec4(0.5, 0.0, 0.0, 1.0); // set the output variable to a dark-red color
-}
-        </system:String>
-        
-        <system:String x:Key="defaultFragmentShaderCode" xml:space="preserve">
-#version 330 core
-out vec4 FragColor;
-  
-in vec4 vertexColor; // the input variable from the vertex shader (same name and same type)  
-
-void main()
-{
-    FragColor = vertexColor;
-}
-        </system:String>
+        <DataTemplate x:Key="testDT">
+            <TextBlock Text="Test"/>
+        </DataTemplate>
 
         <DataTemplate DataType="{x:Type local:Float}">
             <DockPanel>
@@ -171,9 +150,7 @@ void main()
                         <Button DockPanel.Dock="Bottom" x:Name="newAttributeButton" Content="New attribute" Click="newAttributeButton_Click"/>
                     </UniformGrid>
 
-                    <DataGrid x:Name="verticesDataGrid" ItemsSource="{Binding Mode=TwoWay, Source={StaticResource core}, Path=Vertices}" AutoGenerateColumns="False" CanUserAddRows="False">
-                        <DataGrid.Columns>
-                        </DataGrid.Columns>
+                    <DataGrid x:Name="verticesDataGrid" ItemsSource="{Binding Mode=OneWay, Source={StaticResource core}, Path=Vertices}" AutoGenerateColumns="False" CanUserAddRows="False">
                     </DataGrid>
                 </DockPanel>
                 <GridSplitter Grid.Column="1" Width="5" ResizeBehavior="PreviousAndNext"/>

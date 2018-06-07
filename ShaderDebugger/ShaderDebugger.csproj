@@ -67,14 +67,22 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AddAttributeWindow.xaml.cs">
+      <DependentUpon>AddAttributeWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="AddUniformWindow.xaml.cs">
       <DependentUpon>AddUniformWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Attribute.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="NotifyPropertyChangedBase.cs" />
     <Compile Include="Uniform.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Vertex.cs" />
+    <Page Include="AddAttributeWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="AddUniformWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

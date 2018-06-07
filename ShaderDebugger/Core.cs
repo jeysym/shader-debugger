@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using System.Linq;
+//using System.Linq;
 using SharpGL;
 using SharpGL.Shaders;
 using System.Collections.ObjectModel;
@@ -26,106 +26,124 @@ namespace ShaderDebugger
 
     public class Core : NotifyPropertyChangedBase, IInitable<OpenGL>
     {
-        // ====================================================================
+        // ==================================================================================================
         // PRIVATE FIELDS
-        // ====================================================================
+        // ==================================================================================================
 
         // PROPERTY FIELDS
         
-        private string _vertexShaderCode;
-        private string _fragmentShaderCode;
-        private ObservableCollection<Uniform> _uniforms;
-        private ObservableCollection<Vertex> _vertices;
-        private Dictionary<string, AttributeInfo> _attributeInfos;
-        private string _errorOutput;
+        private string _VertexShaderCode;
+        private string _FragmentShaderCode;
+        private ObservableCollection<Uniform> _Uniforms;
+        private ObservableCollection<Vertex> _Vertices;
+        private Dictionary<string, AttributeInfo> _AttributeInfos;
+        private string _ErrorOutput;
 
         // OTHER FIELDS
 
         private OpenGL gl;
         private ShaderProgram program;
         private ShaderProgramState state;
-        private int nextAttributeId = 0;
 
-        // ====================================================================
+
+        // ==================================================================================================
         // PROPERTIES
-        // ====================================================================
+        // ==================================================================================================
 
+        /// <summary>
+        /// Gets or sets the GLSL code for vertex shader.
+        /// </summary>
         public string VertexShaderCode {
-            get { return _vertexShaderCode; }
-            set { _vertexShaderCode = value; state |= ShaderProgramState.ShadersChanged; NotifyPropertyChanged(); }
+            get { return _VertexShaderCode; }
+            set
+            {
+                _VertexShaderCode = value;
+                state |= ShaderProgramState.ShadersChanged;
+                NotifyPropertyChanged();
+            }
         }
 
+        /// <summary>
+        /// Gets or sets the GLSL code for fragment shader.
+        /// </summary>
         public string FragmentShaderCode {
-            get { return _fragmentShaderCode; }
-            set { _fragmentShaderCode = value; state |= ShaderProgramState.ShadersChanged; NotifyPropertyChanged(); }
+            get { return _FragmentShaderCode; }
+            set
+            {
+                _FragmentShaderCode = value;
+                state |= ShaderProgramState.ShadersChanged;
+                NotifyPropertyChanged();
+            }
         }
 
+        /// <summary>
+        /// Collection of shader program uniform variables.
+        /// </summary>
         public ObservableCollection<Uniform> Uniforms {
-            get { return _uniforms; }
-            set { _uniforms = value; NotifyPropertyChanged(); }
+            get { return _Uniforms; }
+            set
+            {
+                _Uniforms = value;
+                state |= ShaderProgramState.UniformsChanged;
+                NotifyPropertyChanged();
+            }
         }
 
+        /// <summary>
+        /// Collection of vertices (with their attributes) that serve as vertex shader input.
+        /// </summary>
         public ObservableCollection<Vertex> Vertices {
-            get { return _vertices; }
-            set { _vertices = value; NotifyPropertyChanged(); }
+            get { return _Vertices; }
         }
 
+        /// <summary>
+        /// Dictionary with information about attributes. Do not use this property to add or remove 
+        /// attributes, use AddAttribute() or RemoveAttribute() instead.
+        /// </summary>
         public Dictionary<string, AttributeInfo> AttributeInfos
         {
-            get { return _attributeInfos; }
-            set { _attributeInfos = value; NotifyPropertyChanged(); }
+            get { return _AttributeInfos; }
         }
 
+        /// <summary>
+        /// Error output from GLSL compiler and linker.
+        /// </summary>
         public string ErrorOutput
         {
-            get { return _errorOutput; }
-            set { _errorOutput = value; NotifyPropertyChanged(); }
+            get { return _ErrorOutput; }
+            set { _ErrorOutput = value; NotifyPropertyChanged(); }
         }
 
         public bool WasCompiledWithoutError
         {
-            get { return _errorOutput == null; }
+            get { return _ErrorOutput == null; }
         }
 
 
-        // ====================================================================
+        // ==================================================================================================
         // UNIFORM / VERTEX MANIPULATION
-        // ====================================================================
+        // ==================================================================================================
 
-        public void AddUniform(Uniform newUniform)
+        /// <summary>
+        /// Adds new attribute for all vertices.
+        /// </summary>
+        /// <param name="attributeInfo">Structure describing the attribute</param>
+        public void AddAttribute(AttributeInfo attributeInfo)
         {
-            Uniforms.Add(newUniform);
-            newUniform.Variable.PropertyChanged += OnUniformChange;
-            newUniform.PropertyChanged += OnUniformChange;
-        }
+            AttributeInfos.Add(attributeInfo.Id, attributeInfo);
 
-        public void AddNewVertex()
-        {
-            Vertex vertex = new Vertex();
-            
-            foreach (var pair in AttributeInfos)
-            {
-                var attributeInfo = pair.Value;
-                vertex.Attributes.Add(attributeInfo.Id, attributeInfo.CreateNewVariable());
-            }
-
-            Vertices.Add(vertex);
-        }
-
-        public void AddNewAttribute(AttributeInfo attributeInfo)
-        {
-            string id = nextAttributeId.ToString();
-            attributeInfo.Id = id;
-            nextAttributeId++;
-
-            AttributeInfos.Add(id, attributeInfo);
+            // Ensure that all vertices will have this attribute.
             foreach (Vertex vertex in Vertices) {
                 var newVariable = attributeInfo.CreateNewVariable();
                 newVariable.PropertyChanged += OnAttributeChange;
-                vertex.Attributes.Add(id, newVariable);
+                vertex.Attributes.Add(attributeInfo.Id, newVariable);
             }
         }
 
+        /// <summary>
+        /// Removes attribute specified by its id from all the vertices.
+        /// </summary>
+        /// <param name="id">Specifies the attribute to be removed</param>
         public void RemoveAttribute(string id)
         {
             AttributeInfos.Remove(id);
@@ -136,40 +154,104 @@ namespace ShaderDebugger
             }
         }
 
-        
-        // ====================================================================
-        // HANDLING CHANGES
-        // ====================================================================
 
-        // Is called when single uniform changes in some way.
+        // ==================================================================================================
+        // HANDLING CHANGES
+        // ==================================================================================================
+
+        /// <summary>
+        /// Is called when single uniform changes in some way.
+        /// </summary>
         private void OnUniformChange(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             state |= ShaderProgramState.UniformsChanged;
         }
 
-        // Is called when uniform collection changes (uniform added, removed, etc.)
-        private void OnUniformCollectionChange(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            state |= ShaderProgramState.UniformsChanged;
-        }
-
-        private void OnVertexCollectionChange(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        /// <summary>
+        /// Is called when single vertex changes in some way.
+        /// </summary>
+        private void OnVertexChange(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             state |= ShaderProgramState.VerticesChanged;
         }
 
+        /// <summary>
+        /// Is called when single attribute variable changes in some way.
+        /// </summary>
         private void OnAttributeChange(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             state |= ShaderProgramState.VerticesChanged;
         }
 
+        /// <summary>
+        /// Is called when uniform collection changes (uniform added, removed, etc.).
+        /// </summary>
+        private void OnUniformCollectionChange(
+            object sender, 
+            System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
+                    // Have new elements in collection notify this class when they get changed.
+                    foreach (var obj in e.NewItems)
+                    {
+                        Uniform uniform = (Uniform)obj;
+                        uniform.PropertyChanged += OnUniformChange;
+                        uniform.Variable.PropertyChanged += OnUniformChange;
+                    }
+                    break;
+            }
+
+            state |= ShaderProgramState.UniformsChanged;
+        }
+
+        /// <summary>
+        /// Is called when vertex collection changes (uniform added, removed, etc.).
+        /// </summary>
+        private void OnVertexCollectionChange(
+            object sender, 
+            System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
+                    // Have new elements in collection notify this class when they get changed.
+                    // Also ensure that new vertices will have all the already defined attributes.
+                    foreach (var obj in e.NewItems)
+                    {
+                        Vertex vertex = (Vertex)obj;
+                        vertex.PropertyChanged += OnVertexChange;
+                        
+                        foreach (AttributeInfo attributeInfo in AttributeInfos.Values)
+                        {
+                            if (vertex.Attributes.ContainsKey(attributeInfo.Id) == false)
+                            {
+                                vertex.Attributes.Add(attributeInfo.Id, attributeInfo.CreateNewVariable());
+                            }
+                        }
+                    }
+                    break;
+            }
+
+            state |= ShaderProgramState.VerticesChanged;
+        }
+
+
+        // ==================================================================================================
+        // OTHER
+        // ==================================================================================================
 
         public Core()
         {
             state = ShaderProgramState.Valid;
             Uniforms = new ObservableCollection<Uniform>();
-            Vertices = new ObservableCollection<Vertex>();
-            AttributeInfos = new Dictionary<string, AttributeInfo>();
+            _Vertices = new ObservableCollection<Vertex>();
+            _AttributeInfos = new Dictionary<string, AttributeInfo>();
 
             Uniforms.CollectionChanged += OnUniformCollectionChange;
             Vertices.CollectionChanged += OnVertexCollectionChange;

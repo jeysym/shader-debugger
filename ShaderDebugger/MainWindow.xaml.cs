@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using SharpGL;
+using System.Windows.Markup;
 
 namespace ShaderDebugger
 {
@@ -21,15 +22,39 @@ namespace ShaderDebugger
     /// </summary>
     public partial class MainWindow : Window
     {
+        // Cached core class
+        private Core core;
+        private bool renderManualDimensions;
 
         private string GetDefVShaderCode()
         {
-            return (string)this.Resources ["defaultVertexShaderCode"];
+            return @"#version 330 core
+layout (location = 0) in vec3 position;
+  
+out vec4 vertexColor; // specify a color output to the fragment shader
+
+void main()
+{
+    gl_Position = vec4(position, 1.0); 
+    vertexColor = vec4(0.5, 0.0, 0.0, 1.0); // set the output variable to a dark-red color
+}
+";
         }
 
         private string GetDefFShaderCode()
         {
-            return (string)this.Resources["defaultFragmentShaderCode"];
+            return @"#version 330 core
+out vec4 FragColor;
+
+uniform float k;
+  
+in vec4 vertexColor; // the input variable from the vertex shader (same name and same type)  
+
+void main()
+{
+    FragColor = k * vertexColor;
+}
+";
         }
 
         private Core GetCore()
@@ -37,51 +62,43 @@ namespace ShaderDebugger
             return (Core)this.Resources["core"];
         }
 
+        private void InitUniforms()
+        {
+            Uniform k = new Uniform("k", new Float() { Value = 1.0f });
+
+            core.Uniforms.Add(k);
+        }
+
+        private void InitVertices()
+        {
+            
+        }
+
         public MainWindow()
         {
             InitializeComponent();
 
-            var core = GetCore();
-            var vCode = GetDefVShaderCode();
-            var fCode = GetDefFShaderCode();
+            core = GetCore();
+            renderManualDimensions = 
+                (renderSizeManualCheckBox.IsChecked != null) && (renderSizeManualCheckBox.IsChecked.Value);
 
-            vertexShaderTextBox.Text = vCode;
-            fragmentShaderTextBox.Text = fCode;
+            // There is a two-way binding between shader strings an TextBoxes so it is sufficient to change
+            // only the source strings.
+            core.VertexShaderCode = GetDefVShaderCode();
+            core.FragmentShaderCode = GetDefFShaderCode();
 
-            core.VertexShaderCode = vCode;
-            core.FragmentShaderCode = fCode;
-
-            Uniform k = new Uniform("k", new Float() { Value = 4.2f });
-            Uniform d = new Uniform("d", new Vec3f { X = 1.0f, Y = 0.0f, Z = 1.0f });
-
-            core.AddUniform(k);
-            core.AddUniform(d);
-
-            core.AddNewVertex();
-            core.AddNewVertex();
-
-            AttributeInfo attInfo = new AttributeInfo();
-            attInfo.Name = "Vektor ctyri";
-            attInfo.Location = 42;
-            attInfo.Type = GLType.VEC3;
-            core.AddNewAttribute(attInfo);
-
-            DataGridTextColumn nameColumn = new DataGridTextColumn();
-            nameColumn.Header = attInfo.Name;
-            nameColumn.Binding = new Binding($"Attributes[{attInfo.Id}]");
-            verticesDataGrid.Columns.Add(nameColumn);
-
-
-            //Vertex vert = new Vertex();
-            //vert.Attributes.Add(attInfo.Id, attInfo.CreateNewVariable());
-
-            //core.Vertices.Add(vert);
+            InitUniforms();
+            InitVertices();
         }
+
+
+        // ==================================================================================================
+        // HANDLING EVENTS
+        // ==================================================================================================
 
         private void OpenGLControl_OpenGLInitialized(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
         {
             var gl = args.OpenGL;
-            var core = GetCore();
 
             core.Init(gl);
         }
@@ -89,11 +106,9 @@ namespace ShaderDebugger
         private void OpenGLControl_OpenGLDraw(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
         {
             var gl = args.OpenGL;
-            var core = GetCore();
 
-            bool manualRenderSize = (renderSizeManualCheckBox.IsChecked != null) ? renderSizeManualCheckBox.IsChecked.Value : false;
             int width, height;
-            if (manualRenderSize)
+            if (renderManualDimensions)
             {
                 if (int.TryParse(renderWidthTextBox.Text, out width) == false || width <= 0)
                 {
@@ -142,7 +157,7 @@ namespace ShaderDebugger
 
             if (window.Result)
             {
-                core.AddUniform(window.NewUniform);
+                core.Uniforms.Add(window.NewUniform);
             }
         }
 
@@ -150,12 +165,14 @@ namespace ShaderDebugger
         {
             renderWidthTextBox.IsEnabled = true;
             renderHeightTextBox.IsEnabled = true;
+            renderManualDimensions = true;
         }
 
         private void renderSizeManualCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             renderWidthTextBox.IsEnabled = false;
             renderHeightTextBox.IsEnabled = false;
+            renderManualDimensions = false;
         }
 
         private void deleteVerticesButton_Click(object sender, RoutedEventArgs e)
@@ -175,12 +192,46 @@ namespace ShaderDebugger
         private void newVertexButton_Click(object sender, RoutedEventArgs e)
         {
             var core = GetCore();
-            core.AddNewVertex();
+            core.Vertices.Add(new Vertex());
+        }
+
+        DataGridTemplateColumn MakeTemplateColumn(AttributeInfo attrInfo)
+        {
+            string xamlString = @"
+                <DataGridTemplateColumn xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" 
+                    Header = """ + attrInfo.Name + @""">
+
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ContentPresenter 
+                                Content = ""{ Binding Path = Attributes[" + attrInfo.Id + @"] }""
+                            />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>";
+
+            object result = XamlReader.Parse(xamlString);
+            DataGridTemplateColumn column = result as DataGridTemplateColumn;
+
+            return column;       
         }
 
         private void newAttributeButton_Click(object sender, RoutedEventArgs e)
         {
+            var core = GetCore();
 
+            AddAttributeWindow window = new AddAttributeWindow();
+            window.ShowDialog();
+
+            if (window.Result)
+            {
+                AttributeInfo attributeInfo = window.NewAttribute;
+
+                core.AddAttribute(attributeInfo);
+
+                var column = MakeTemplateColumn(attributeInfo);
+                verticesDataGrid.Columns.Add(column);
+            }
         }
     }
 }
