@@ -198,14 +198,12 @@ void main()
 
         private void deleteVerticesButton_Click(object sender, RoutedEventArgs e)
         {
-            var core = GetCore();
-
-            while (verticesDataGrid.SelectedItems.Count > 0)
+            while (verticesDataGrid.SelectedCells.Count > 0)
             {
-                int selectedIndex = verticesDataGrid.SelectedIndex;
-                if (selectedIndex != -1)
+                Vertex selectedVertex = verticesDataGrid.SelectedCells[0].Item as Vertex;
+                if (selectedVertex != null)
                 {
-                    core.Vertices.RemoveAt(selectedIndex);
+                    core.Vertices.Remove(selectedVertex);
                 }
             }
         }
@@ -224,30 +222,10 @@ void main()
 
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width=""3*""/>
-                                    <ColumnDefinition Width = ""3*""/>
-                                    <ColumnDefinition Width = ""1*""/>
-                                </Grid.ColumnDefinitions>
-  
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height = ""*""/>
-                                    <RowDefinition Height = ""*""/>
-                                    <RowDefinition Height = ""*""/>
-                                </Grid.RowDefinitions>
-     
-
-                                <TextBlock Grid.Column = ""0"" Grid.Row = ""0"" Text = ""Name""/>
-                                <TextBlock Grid.Column = ""0"" Grid.Row = ""1"" Text = ""Type""/>             
-                                <TextBlock Grid.Column = ""0"" Grid.Row = ""2"" Text = ""Location""/>
-
-                                <TextBox Grid.Column = ""1"" Grid.Row = ""0"" Text = """ + attrInfo.Name + @""" TextAlignment = ""Right"" IsEnabled = ""False""/>                          
-                                <TextBox Grid.Column = ""1"" Grid.Row = ""1"" Text = """ + attrInfo.Type.ToString() + @""" TextAlignment = ""Right"" IsEnabled = ""False""/>
-                                <TextBox Grid.Column = ""1"" Grid.Row = ""2"" Text = ""0"" TextAlignment = ""Right"" IsEnabled = ""False""/>
-
-                                <Button Grid.Column = ""2"" Grid.Row = ""0"" Grid.RowSpan = ""3"" Content = ""Delete""/>
-                            </Grid> 
+                            <UniformGrid Columns=""2"">
+                                <TextBlock Text = """ + attrInfo.Name + @""" TextAlignment = ""Right""/>                          
+                                <TextBlock Text = """ + attrInfo.Type.ToString() + @""" TextAlignment = ""Right""/>
+                            </UniformGrid> 
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
 
@@ -266,6 +244,8 @@ void main()
             return column;       
         }
 
+        private Dictionary<DataGridColumn, string> columnToAttributeId = new Dictionary<DataGridColumn, string>();
+
         private void newAttributeButton_Click(object sender, RoutedEventArgs e)
         {
             var core = GetCore();
@@ -281,6 +261,7 @@ void main()
 
                 var column = MakeTemplateColumn(attributeInfo);
                 verticesDataGrid.Columns.Add(column);
+                columnToAttributeId[column] = attributeInfo.Id;
             }
         }
 
@@ -296,6 +277,20 @@ void main()
                 core.ClearColor = color;
             }
             
+        }
+
+        private void deleteAttributeButton_Click(object sender, RoutedEventArgs e)
+        {
+            while (verticesDataGrid.SelectedCells.Count > 0)
+            {
+                DataGridTemplateColumn selectedColumn = verticesDataGrid.SelectedCells[0].Column as DataGridTemplateColumn;
+                if (selectedColumn != null)
+                {
+                    string attributeId = columnToAttributeId[selectedColumn];
+                    core.RemoveAttribute(attributeId);
+                    verticesDataGrid.Columns.Remove(selectedColumn);
+                }
+            }
         }
     }
 }
