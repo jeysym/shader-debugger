@@ -14,7 +14,7 @@
         mc:Ignorable="d"
         
         x:Name="mainWindow"
-        Title="Shader Debugger" Height="600" Width="1200" MinHeight="300" MinWidth="600">
+        Title="Shader Debugger" Height="600" Width="1200" MinHeight="300" MinWidth="600" Icon="Logo.PNG">
     <Window.Resources>
         <local:Core x:Key="core"/>
 
@@ -174,7 +174,7 @@
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="Auto"/>
                             <DataGridTextColumn Header="Location" Binding="{Binding Location, TargetNullValue=N/A}" IsReadOnly="True" Width="Auto"/>
                             <DataGridTextColumn Header="Type" Binding="{Binding TypeDescription}" IsReadOnly="True" Width="Auto"/>
-                            <DataGridTemplateColumn Header="Value" Width="*">
+                            <DataGridTemplateColumn Header="Value" Width="Auto">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <ContentPresenter Content="{Binding Variable}"/>
