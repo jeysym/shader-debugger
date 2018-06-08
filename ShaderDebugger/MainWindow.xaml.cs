@@ -105,6 +105,9 @@ void main()
 
             InitUniforms();
             InitVertices();
+
+            modeComboBox.ItemsSource = Enum.GetValues(typeof(PrimitiveMode));
+            modeComboBox.SelectedIndex = 0;
         }
 
 
@@ -146,6 +149,8 @@ void main()
             renderWidthTextBox.InvalidateMeasure();
             renderHeightTextBox.Text = height.ToString();
             renderHeightTextBox.InvalidateMeasure();
+
+            core.Mode = (PrimitiveMode)modeComboBox.SelectedItem;
 
             core.Render(width, height);
         }
@@ -217,6 +222,35 @@ void main()
                 <DataGridTemplateColumn xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" 
                     Header = """ + attrInfo.Name + @""">
 
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width=""3*""/>
+                                    <ColumnDefinition Width = ""3*""/>
+                                    <ColumnDefinition Width = ""1*""/>
+                                </Grid.ColumnDefinitions>
+  
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height = ""*""/>
+                                    <RowDefinition Height = ""*""/>
+                                    <RowDefinition Height = ""*""/>
+                                </Grid.RowDefinitions>
+     
+
+                                <TextBlock Grid.Column = ""0"" Grid.Row = ""0"" Text = ""Name""/>
+                                <TextBlock Grid.Column = ""0"" Grid.Row = ""1"" Text = ""Type""/>             
+                                <TextBlock Grid.Column = ""0"" Grid.Row = ""2"" Text = ""Location""/>
+
+                                <TextBox Grid.Column = ""1"" Grid.Row = ""0"" Text = """ + attrInfo.Name + @""" TextAlignment = ""Right"" IsEnabled = ""False""/>                          
+                                <TextBox Grid.Column = ""1"" Grid.Row = ""1"" Text = """ + attrInfo.Type.ToString() + @""" TextAlignment = ""Right"" IsEnabled = ""False""/>
+                                <TextBox Grid.Column = ""1"" Grid.Row = ""2"" Text = ""0"" TextAlignment = ""Right"" IsEnabled = ""False""/>
+
+                                <Button Grid.Column = ""2"" Grid.Row = ""0"" Grid.RowSpan = ""3"" Content = ""Delete""/>
+                            </Grid> 
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <ContentPresenter 
@@ -248,6 +282,20 @@ void main()
                 var column = MakeTemplateColumn(attributeInfo);
                 verticesDataGrid.Columns.Add(column);
             }
+        }
+
+        private void ColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        {
+            if (e.NewValue.HasValue)
+            {
+                Vec3f color = new Vec3f();
+                color.X = e.NewValue.Value.ScR;
+                color.Y = e.NewValue.Value.ScG;
+                color.Z = e.NewValue.Value.ScB;
+
+                core.ClearColor = color;
+            }
+            
         }
     }
 }

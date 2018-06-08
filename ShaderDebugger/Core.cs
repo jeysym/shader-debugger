@@ -24,6 +24,11 @@ namespace ShaderDebugger
         VerticesChanged = 8
     }
 
+    public enum PrimitiveMode
+    {
+        Triangles, TriangleStrip, TriangleFan, LineStrip, LineLoop, Points
+    }
+
     public class Core : NotifyPropertyChangedBase, IInitable<OpenGL>
     {
         // ==================================================================================================
@@ -37,7 +42,9 @@ namespace ShaderDebugger
         private ObservableCollection<Uniform> _Uniforms;
         private ObservableCollection<Vertex> _Vertices;
         private Dictionary<string, AttributeInfo> _AttributeInfos;
+        private PrimitiveMode _Mode = PrimitiveMode.Triangles;
         private string _ErrorOutput;
+        private Vec3f _ClearColor;
 
         // OTHER FIELDS
 
@@ -106,6 +113,24 @@ namespace ShaderDebugger
         public Dictionary<string, AttributeInfo> AttributeInfos
         {
             get { return _AttributeInfos; }
+        }
+
+        /// <summary>
+        /// Describes the primitve mode that will be used to render vertices.
+        /// </summary>
+        public PrimitiveMode Mode
+        {
+            get { return _Mode; }
+            set { _Mode = value; NotifyPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// Color that will be used to clear the framebuffer.
+        /// </summary>
+        public Vec3f ClearColor
+        {
+            get { return _ClearColor; }
+            set { _ClearColor = value; NotifyPropertyChanged(); }
         }
 
         /// <summary>
@@ -263,6 +288,8 @@ namespace ShaderDebugger
 
             Uniforms.CollectionChanged += OnUniformCollectionChange;
             Vertices.CollectionChanged += OnVertexCollectionChange;
+
+            ClearColor = new Vec3f() { X = 0.1f, Y = 0.1f, Z = 0.1f };
         }
 
         public void GenerateBuffers()
@@ -454,17 +481,44 @@ namespace ShaderDebugger
             state = ShaderProgramState.Valid;
         }
 
+        private uint GetOpenGLMode()
+        {
+            switch (Mode)
+            {
+                case PrimitiveMode.Points:
+                    return OpenGL.GL_POINTS;
+
+                case PrimitiveMode.Triangles:
+                    return OpenGL.GL_TRIANGLES;
+
+                case PrimitiveMode.TriangleStrip:
+                    return OpenGL.GL_TRIANGLE_STRIP;
+
+                case PrimitiveMode.TriangleFan:
+                    return OpenGL.GL_TRIANGLE_FAN;
+
+                case PrimitiveMode.LineStrip:
+                    return OpenGL.GL_LINE_STRIP;
+
+                case PrimitiveMode.LineLoop:
+                    return OpenGL.GL_LINE_LOOP;
+
+                default:
+                    throw new Exception("This code should be unreachable!");
+            }
+        }
+
         public void Render(int width, int height)
         {
             CheckValidity();
 
             gl.Viewport(0, 0, width, height);
-            gl.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+            gl.ClearColor(ClearColor.X, ClearColor.Y, ClearColor.Z, 1.0f);
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
 
             gl.BindVertexArray(mainVAO);
             {
-                gl.DrawArrays(OpenGL.GL_TRIANGLES, 0, 3);
+                gl.DrawArrays(GetOpenGLMode(), 0, Vertices.Count);
                 gl.Finish();
             }
             gl.BindVertexArray(0);
