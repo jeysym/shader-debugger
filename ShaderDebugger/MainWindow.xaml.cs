@@ -18,12 +18,13 @@ using System.Windows.Markup;
 namespace ShaderDebugger
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// This is the main window of this application. It contains interaction logic for MainWindow.xaml. 
     /// </summary>
     public partial class MainWindow : Window
     {
         // Cached core class
         private Core core;
+        // Whether to use manual render dimesions for viewport
         private bool renderManualDimensions;
 
         private string GetDefVShaderCode()
@@ -55,11 +56,6 @@ void main()
     FragColor = k * vertexColor;
 }
 ";
-        }
-
-        private Core GetCore()
-        {
-            return (Core)this.Resources["core"];
         }
 
         private void InitUniforms()
@@ -94,7 +90,8 @@ void main()
         {
             InitializeComponent();
 
-            core = GetCore();
+            core = new Core();
+            this.DataContext = core;
             renderManualDimensions = 
                 (renderSizeManualCheckBox.IsChecked != null) && (renderSizeManualCheckBox.IsChecked.Value);
 
@@ -157,8 +154,6 @@ void main()
 
         private void deleteUniformButton_Click(object sender, RoutedEventArgs e)
         {
-            var core = GetCore();
-
             while (uniformsDataGrid.SelectedItems.Count > 0)
             {
                 int selectedIndex = uniformsDataGrid.SelectedIndex;
@@ -171,8 +166,6 @@ void main()
 
         private void newUniformButton_Click(object sender, RoutedEventArgs e)
         {
-            var core = GetCore();
-
             AddUniformWindow window = new AddUniformWindow();
             window.ShowDialog();
 
@@ -210,7 +203,6 @@ void main()
 
         private void newVertexButton_Click(object sender, RoutedEventArgs e)
         {
-            var core = GetCore();
             core.Vertices.Add(new Vertex());
         }
 
@@ -248,8 +240,6 @@ void main()
 
         private void newAttributeButton_Click(object sender, RoutedEventArgs e)
         {
-            var core = GetCore();
-
             AddAttributeWindow window = new AddAttributeWindow();
             window.ShowDialog();
 

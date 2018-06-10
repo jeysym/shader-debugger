@@ -16,8 +16,6 @@
         x:Name="mainWindow"
         Title="Shader Debugger" Height="600" Width="1200" MinHeight="300" MinWidth="600" Icon="Logo.PNG">
     <Window.Resources>
-        <local:Core x:Key="core"/>
-
         <Style x:Key="headerTextStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="TextAlignment" Value="Center"/>
@@ -135,12 +133,12 @@
 
                 <DockPanel Grid.Column="0">
                     <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Vertex shader"/>
-                    <TextBox x:Name="vertexShaderTextBox" Style="{StaticResource codeEditorTextBox}" Text="{Binding VertexShaderCode, Mode=TwoWay, Source={StaticResource core}}"/>
+                    <TextBox x:Name="vertexShaderTextBox" Style="{StaticResource codeEditorTextBox}" Text="{Binding VertexShaderCode, Mode=TwoWay}"/>
                 </DockPanel>
                 <GridSplitter Grid.Column="1" Width="5" ResizeBehavior="PreviousAndNext"/>
                 <DockPanel Grid.Column="2">
                     <TextBlock DockPanel.Dock="Top" Style="{StaticResource headerTextStyle}" Text="Fragment shader"/>
-                    <TextBox x:Name="fragmentShaderTextBox" Style="{StaticResource codeEditorTextBox}" Text="{Binding FragmentShaderCode, Mode=TwoWay, Source={StaticResource core}}"/>
+                    <TextBox x:Name="fragmentShaderTextBox" Style="{StaticResource codeEditorTextBox}" Text="{Binding FragmentShaderCode, Mode=TwoWay}"/>
                 </DockPanel>
             </Grid>
             <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch"/>
@@ -164,7 +162,7 @@
                         <Button x:Name="newAttributeButton" Content="New attribute" Click="newAttributeButton_Click"/>
                     </UniformGrid>
 
-                    <DataGrid x:Name="verticesDataGrid" ItemsSource="{Binding Vertices, Mode=OneWay, Source={StaticResource core}}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserResizeRows="False" SelectionUnit="Cell"/>
+                    <DataGrid x:Name="verticesDataGrid" ItemsSource="{Binding Vertices, Mode=OneWay}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserResizeRows="False" SelectionUnit="Cell"/>
                 </DockPanel>
                 <GridSplitter Grid.Column="1" Width="5" ResizeBehavior="PreviousAndNext"/>
                 <DockPanel Grid.Column="2">
@@ -174,7 +172,7 @@
                         <Button x:Name="newUniformButton" Content="New uniform" Click="newUniformButton_Click"/>
                     </UniformGrid>
 
-                    <DataGrid x:Name="uniformsDataGrid" ItemsSource="{Binding Uniforms, Mode=TwoWay, Source={StaticResource core}}" AutoGenerateColumns="False" CanUserResizeColumns="False" CanUserResizeRows="False">
+                    <DataGrid x:Name="uniformsDataGrid" ItemsSource="{Binding Uniforms, Mode=TwoWay}" AutoGenerateColumns="False" CanUserResizeColumns="False" CanUserResizeRows="False">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="Auto"/>
                             <DataGridTextColumn Header="Location" Binding="{Binding Location, TargetNullValue=N/A}" IsReadOnly="True" Width="Auto"/>
@@ -221,6 +219,6 @@
 
         <!-- Output from shader compiler etc. -->
         <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="consoleOutputTextBox" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" BorderThickness="5"
-                 Text="{Binding ErrorOutput, Source={StaticResource core}, TargetNullValue=OK}"/>
+                 Text="{Binding ErrorOutput, TargetNullValue=OK}"/>
     </Grid>
 </Window>
