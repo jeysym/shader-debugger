@@ -176,7 +176,7 @@ void main()
             AddUniformWindow window = new AddUniformWindow();
             window.ShowDialog();
 
-            if (window.Result)
+            if (window.NewUniform != null)
             {
                 core.Uniforms.Add(window.NewUniform);
             }
@@ -253,7 +253,7 @@ void main()
             AddAttributeWindow window = new AddAttributeWindow();
             window.ShowDialog();
 
-            if (window.Result)
+            if (window.NewAttribute != null)
             {
                 AttributeInfo attributeInfo = window.NewAttribute;
 

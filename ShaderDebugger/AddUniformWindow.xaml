@@ -26,14 +26,18 @@
                         <ComboBox Grid.Row="0" Grid.Column="1" x:Name="typeComboBox"/>
 
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Name" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" x:Name="nameTextBox" HorizontalAlignment="Stretch"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" x:Name="nameTextBox" HorizontalAlignment="Stretch">
+                            <TextBox.Text>
+                                <Binding Mode="TwoWay" Path="NewUniformName" UpdateSourceTrigger="PropertyChanged"/>
+                            </TextBox.Text>
+                        </TextBox>
                     </Grid>
 
                 </StackPanel>
             </StackPanel>
 
             <UniformGrid DockPanel.Dock="Bottom" Rows="1" Columns="2">
-                <Button Content="Add" Click="AddButton_Click" IsDefault="True"/>
+                <Button Content="Add" Click="AddButton_Click" IsDefault="True" IsEnabled="{Binding Mode=TwoWay, Path=IsNewUniformNameValid}"/>
                 <Button Content="Cancel" Click="CancelButton_Click" IsCancel="True"/>
             </UniformGrid>
         </DockPanel>

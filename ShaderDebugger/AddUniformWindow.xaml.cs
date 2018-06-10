@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,20 +19,67 @@ namespace ShaderDebugger
     /// <summary>
     /// Interaction logic for AddUniformWindow.xaml
     /// </summary>
-    public partial class AddUniformWindow : Window
+    public partial class AddUniformWindow : Window, INotifyPropertyChanged
     {
-        public bool Result { get; set; }
+        // ==================================================================================================
+        // INOTIFYPROPERTYCHANGED STUFF
+        // ==================================================================================================
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+
+        // ==================================================================================================
+        // PROPERTY PRIVATE FIELDS
+        // ==================================================================================================
+
+        private string _NewUniformName;
+        private bool _IsNewUniformNameValid;
+
+
+        // ==================================================================================================
+        // PROPERTIES
+        // ==================================================================================================
+
+        public OpenGLIdentifierValidationRule NameValidationRule { get; private set; }
         public Uniform NewUniform { get; set; }
 
-        private ICollection<GLType> supportedTypes;
+        public string NewUniformName {
+            get { return _NewUniformName; }
+            set {
+                _NewUniformName = value;
+                IsNewUniformNameValid = NameValidationRule.Validate(_NewUniformName, System.Globalization.CultureInfo.CurrentUICulture).IsValid;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public bool IsNewUniformNameValid {
+            get { return _IsNewUniformNameValid; }
+            set { _IsNewUniformNameValid = value; NotifyPropertyChanged(); }
+        }
+
+
+        // ==================================================================================================
+        // OTHER
+        // ==================================================================================================
 
         public AddUniformWindow()
         {
             InitializeComponent();
 
-            Result = false;
+            this.DataContext = this;
 
-            supportedTypes = UniformMaker.GetSupportedTypes();
+            NewUniform = null;
+            NameValidationRule = new OpenGLIdentifierValidationRule();
+
+            ICollection<GLType> supportedTypes = UniformMaker.GetSupportedTypes();
             typeComboBox.ItemsSource = supportedTypes;
             typeComboBox.SelectedIndex = 0;
         }
@@ -42,11 +91,10 @@ namespace ShaderDebugger
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            string name = nameTextBox.Text;
+            string name = NewUniformName;
             GLType type = (GLType)typeComboBox.SelectedItem;
 
             NewUniform = UniformMaker.Make(type, name);
-            Result = true;
             Close();
         }
     }

@@ -1,36 +1,82 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+
 
 namespace ShaderDebugger
 {
     /// <summary>
     /// Interaction logic for AddUniformWindow.xaml
     /// </summary>
-    public partial class AddAttributeWindow : Window
+    public partial class AddAttributeWindow : Window, INotifyPropertyChanged
     {
-        public bool Result { get; set; }
+        // ==================================================================================================
+        // INOTIFYPROPERTYCHANGED STUFF
+        // ==================================================================================================
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+
+        // ==================================================================================================
+        // PROPERTY PRIVATE FIELDS
+        // ==================================================================================================
+
+        private string _NewAttributeName;
+        private bool _IsNewAttributeNameValid;
+
+
+        // ==================================================================================================
+        // PROPERTIES
+        // ==================================================================================================
+
+        public OpenGLIdentifierValidationRule NameValidationRule { get; private set; }
         public AttributeInfo NewAttribute { get; set; }
 
-        private ICollection<GLType> supportedTypes;
+        public string NewAttributeName
+        {
+            get { return _NewAttributeName; }
+            set
+            {
+                _NewAttributeName = value;
+                IsNewAttributeNameValid = NameValidationRule.Validate(_NewAttributeName, System.Globalization.CultureInfo.CurrentUICulture).IsValid;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public bool IsNewAttributeNameValid
+        {
+            get { return _IsNewAttributeNameValid; }
+            set { _IsNewAttributeNameValid = value; NotifyPropertyChanged(); }
+        }
+
+
+        // ==================================================================================================
+        // OTHER
+        // ==================================================================================================
 
         public AddAttributeWindow()
         {
             InitializeComponent();
 
-            Result = false;
+            this.DataContext = this;
 
-            supportedTypes = AttributeMaker.GetSupportedTypes();
+            NewAttribute = null;
+            NameValidationRule = new OpenGLIdentifierValidationRule();
+
+            ICollection<GLType> supportedTypes = AttributeMaker.GetSupportedTypes();
             typeComboBox.ItemsSource = supportedTypes;
             typeComboBox.SelectedIndex = 0;
         }
@@ -42,11 +88,10 @@ namespace ShaderDebugger
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            string name = nameTextBox.Text;
+            string name = NewAttributeName;
             GLType type = (GLType)typeComboBox.SelectedItem;
 
             NewAttribute = AttributeMaker.Make(type, name);
-            Result = true;
             Close();
         }
     }

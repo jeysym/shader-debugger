@@ -94,6 +94,7 @@
     <Compile Include="Attribute.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="NotifyPropertyChangedBase.cs" />
+    <Compile Include="OpenGLIdentifierValidationRule.cs" />
     <Compile Include="Uniform.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Vertex.cs" />
