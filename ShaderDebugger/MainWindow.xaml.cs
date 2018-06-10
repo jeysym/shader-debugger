@@ -22,15 +22,18 @@ namespace ShaderDebugger
     /// </summary>
     public partial class MainWindow : Window
     {
-        // Cached core class
-        private Core core;
-        // Whether to use manual render dimesions for viewport
-        private bool renderManualDimensions;
+        private Core core;                          // Cached core class
+        private bool renderManualDimensions;        // Whether to use manual render dimesions for viewport
+        private Dictionary<DataGridColumn, string> 
+            columnToAttributeId = new Dictionary<DataGridColumn, string>();
 
+        /// <summary>
+        /// Gets the default vertex shader code.
+        /// </summary>
         private string GetDefVShaderCode()
         {
             return @"#version 330 core
-layout (location = 0) in vec3 position;
+in vec3 position;
   
 out vec4 vertexColor; // specify a color output to the fragment shader
 
@@ -42,6 +45,9 @@ void main()
 ";
         }
 
+        /// <summary>
+        /// Gets the default fragment shader code.
+        /// </summary>
         private string GetDefFShaderCode()
         {
             return @"#version 330 core
@@ -58,6 +64,9 @@ void main()
 ";
         }
 
+        /// <summary>
+        /// Initializes uniforms to default state.
+        /// </summary>
         private void InitUniforms()
         {
             Uniform k = new Uniform("k", new Float() { Value = 1.0f });
@@ -65,6 +74,9 @@ void main()
             core.Uniforms.Add(k);
         }
 
+        /// <summary>
+        /// Initializes vertices to default state.
+        /// </summary>
         private void InitVertices()
         {
             AttributeInfo position = AttributeMaker.Make(GLType.VEC3, "position");
@@ -206,8 +218,15 @@ void main()
             core.Vertices.Add(new Vertex());
         }
 
-        DataGridTemplateColumn MakeTemplateColumn(AttributeInfo attrInfo)
+        private DataGridTemplateColumn MakeTemplateColumn(AttributeInfo attrInfo)
         {
+            // This all creates DataGridTemplateColumn instance. It is done this way, because Template 
+            // creation in code is very complicated, and I haven't been able to get this working from
+            // XAML code. Mainly because the Template in XAML would have to be parametrized by attribute-id
+            // in some way. So this is really ugly hack, but it works...
+            // Only other "clean" solution that I could think of is: do not use DataGrid, instead create my
+            // own WPF control probably templated with Grid (although that seems like overkill)
+
             string xamlString = @"
                 <DataGridTemplateColumn xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" 
                     Header = """ + attrInfo.Name + @""">
@@ -216,7 +235,8 @@ void main()
                         <DataTemplate>
                             <UniformGrid Columns=""2"">
                                 <TextBlock Text = """ + attrInfo.Name + @""" TextAlignment = ""Right""/>                          
-                                <TextBlock Text = """ + attrInfo.Type.ToString() + @""" TextAlignment = ""Right""/>
+                                <TextBlock Text = """ + attrInfo.Type.ToString() + @""" 
+                                           TextAlignment = ""Right""/>
                             </UniformGrid> 
                         </DataTemplate>
                     </DataGridTemplateColumn.HeaderTemplate>
@@ -236,8 +256,6 @@ void main()
             return column;       
         }
 
-        private Dictionary<DataGridColumn, string> columnToAttributeId = new Dictionary<DataGridColumn, string>();
-
         private void newAttributeButton_Click(object sender, RoutedEventArgs e)
         {
             AddAttributeWindow window = new AddAttributeWindow();
@@ -255,7 +273,9 @@ void main()
             }
         }
 
-        private void ColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        private void ColorPicker_SelectedColorChanged(
+            object sender, 
+            RoutedPropertyChangedEventArgs<Color?> e)
         {
             if (e.NewValue.HasValue)
             {
@@ -273,7 +293,9 @@ void main()
         {
             while (verticesDataGrid.SelectedCells.Count > 0)
             {
-                DataGridTemplateColumn selectedColumn = verticesDataGrid.SelectedCells[0].Column as DataGridTemplateColumn;
+                DataGridTemplateColumn selectedColumn = 
+                    verticesDataGrid.SelectedCells[0].Column as DataGridTemplateColumn;
+
                 if (selectedColumn != null)
                 {
                     string attributeId = columnToAttributeId[selectedColumn];

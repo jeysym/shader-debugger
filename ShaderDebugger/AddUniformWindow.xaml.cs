@@ -6,18 +6,14 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using System.Globalization;
+
 
 namespace ShaderDebugger
 {
     /// <summary>
-    /// Interaction logic for AddUniformWindow.xaml
+    /// This window is used for creation of new attributes. It contains interaction logic for 
+    /// AddAttributeWindow.xaml
     /// </summary>
     public partial class AddUniformWindow : Window, INotifyPropertyChanged
     {
@@ -25,6 +21,9 @@ namespace ShaderDebugger
         // INOTIFYPROPERTYCHANGED STUFF
         // ==================================================================================================
 
+        /// <summary>
+        /// Event that is invoked when a property of this class is changed.
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
@@ -49,8 +48,16 @@ namespace ShaderDebugger
         // ==================================================================================================
 
         public OpenGLIdentifierValidationRule NameValidationRule { get; private set; }
+
+        /// <summary>
+        /// This property stores the new Uniform instance created by this window. If this property is
+        /// null it means this window was canceled.
+        /// </summary>
         public Uniform NewUniform { get; set; }
 
+        /// <summary>
+        /// Name of the uniform being created.
+        /// </summary>
         public string NewUniformName {
             get { return _NewUniformName; }
             set {
@@ -60,6 +67,9 @@ namespace ShaderDebugger
             }
         }
 
+        /// <summary>
+        /// Tells whether the new name is valid name for OpenGL uniform.
+        /// </summary>
         public bool IsNewUniformNameValid {
             get { return _IsNewUniformNameValid; }
             set { _IsNewUniformNameValid = value; NotifyPropertyChanged(); }

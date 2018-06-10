@@ -4,6 +4,9 @@ using SharpGL;
 
 namespace ShaderDebugger
 {
+    /// <summary>
+    /// Represents a OpenGL uniform variable.
+    /// </summary>
     public class Uniform : NotifyPropertyChangedBase
     {
         private string _Name;
@@ -69,13 +72,25 @@ namespace ShaderDebugger
         }
     }
 
+    /// <summary>
+    /// Factory class for making Uniforms.
+    /// </summary>
     public static class UniformMaker
-    {   
+    {  
+        /// <summary>
+        /// Gets all supported GLSL types, for which a Uniform can be created.
+        /// </summary>
         public static ICollection<GLType> GetSupportedTypes()
         {
             return VariableMaker.GetSupportedTypes();
         }
 
+        /// <summary>
+        /// Makes Uniform from a specified GLSL type.
+        /// </summary>
+        /// <param name="type">GLSL type of the uniform. It should be one of the supported ones.</param>
+        /// <param name="name">Name of the new uniform.</param>
+        /// <returns>The newly created uniform.</returns>
         public static Uniform Make(GLType type, string name)
         {
             GLVariable variable = VariableMaker.Make(type);

@@ -8,6 +8,9 @@ using SharpGL;
 
 namespace ShaderDebugger
 {
+    /// <summary>
+    /// This class describes the OpenGL attribute.
+    /// </summary>
     public class AttributeInfo : NotifyPropertyChangedBase
     {
         private string _Id;
@@ -56,6 +59,9 @@ namespace ShaderDebugger
             set { _Location = value; NotifyPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Tells whether the location of this attribute is set.
+        /// </summary>
         public bool HasValidLocation
         {
             get { return _Location != null; }
@@ -71,11 +77,22 @@ namespace ShaderDebugger
             Type = type;
         }
 
+        /// <summary>
+        /// Makes new default valued OpenGL variable with that has the type specified by this AttributeInfo. 
+        /// </summary>
+        /// <returns>The new OpenGL variable.</returns>
         public GLVariable CreateNewVariable()
         {
             return VariableMaker.Make(Type);
         }
 
+        /// <summary>
+        /// Writes attribute data from specified vertex into a float buffer. This method can be called only
+        /// if the type of attribute is float-based.
+        /// </summary>
+        /// <param name="vertex">Vertex to load the data from.</param>
+        /// <param name="buffer">Buffer to write data to.</param>
+        /// <param name="where">Where in buffer to write the data.</param>
         public void WriteToFloatBuffer(Vertex vertex, float[] buffer, int where)
         {
             if (Type.BaseType != GLBaseType.Float)

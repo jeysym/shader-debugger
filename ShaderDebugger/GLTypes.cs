@@ -13,19 +13,35 @@ namespace ShaderDebugger
     // OPENGL TYPES INFO
     // ======================================================================================================
 
+    /// <summary>
+    /// Base type of OpenGL type.
+    /// </summary>
     public enum GLBaseType
     {
         Float,
     }
 
+    /// <summary>
+    /// Number of components of OpenGL type (more accurately GLSL type).
+    /// </summary>
     public enum GLComponentCount
     {
         One = 1, Two, Three, Four
     }
 
+    /// <summary>
+    /// Describes GLSL type.
+    /// </summary>
     public class GLType : IEquatable<GLType>
     {
+        /// <summary>
+        /// Base type of GLSL type.
+        /// </summary>
         public GLBaseType BaseType { get; private set; }
+
+        /// <summary>
+        /// Number of components of GLSL type.
+        /// </summary>
         public GLComponentCount ComponentCount { get; private set; }
 
         public GLType(GLBaseType type, GLComponentCount count)
@@ -39,6 +55,10 @@ namespace ShaderDebugger
             return (BaseType == other.BaseType) && (ComponentCount == other.ComponentCount);
         }
 
+        /// <summary>
+        /// Gets number of components of this GLSL type. Resulting value lies in interval [1-4].
+        /// </summary>
+        /// <returns>Number of components.</returns>
         public int GetComponentCount()
         {
             return (int)ComponentCount;
@@ -67,6 +87,11 @@ namespace ShaderDebugger
             }
         }
 
+
+        // ==================================================================================================
+        // THE KNOWN GLSL TYPES
+        // ==================================================================================================
+
         public static GLType FLOAT = new GLType(GLBaseType.Float, GLComponentCount.One);
         public static GLType VEC2 = new GLType(GLBaseType.Float, GLComponentCount.Two);
         public static GLType VEC3 = new GLType(GLBaseType.Float, GLComponentCount.Three);
@@ -80,25 +105,36 @@ namespace ShaderDebugger
 
     public abstract class GLVariable : NotifyPropertyChangedBase
     {
-        public abstract GLBaseType GetBaseGLType();
-        public abstract GLComponentCount GetGLComponentCount();
+        protected abstract GLBaseType GetBaseGLType();
+        protected abstract GLComponentCount GetGLComponentCount();
 
+        /// <summary>
+        /// Gets the GLSL type of this variable.
+        /// </summary>
         public GLType GetGLType()
         {
             return new GLType(GetBaseGLType(), GetGLComponentCount());
         }
 
+        /// <summary>
+        /// Sets this GLSL variable as uniform.
+        /// </summary>
+        /// <param name="gl">OpenGL context.</param>
+        /// <param name="location">Uniform location that the variable will be bound to.</param>
         public abstract void SetAsUniform(OpenGL gl, int location);
     }
 
     public abstract class GLFloatVariable : GLVariable
     {
-        public override GLBaseType GetBaseGLType()
+        protected override GLBaseType GetBaseGLType()
         {
             return GLBaseType.Float;
         }
     }
 
+    /// <summary>
+    /// Float based GLSL variable.
+    /// </summary>
     public class Float : GLFloatVariable
     {
         private float _Value;
@@ -108,7 +144,7 @@ namespace ShaderDebugger
             set { _Value = value; NotifyPropertyChanged(); }
         }
 
-        public override GLComponentCount GetGLComponentCount()
+        protected override GLComponentCount GetGLComponentCount()
         {
             return GLComponentCount.One;
         }
@@ -119,6 +155,9 @@ namespace ShaderDebugger
         }
     }
 
+    /// <summary>
+    /// GLSL variable vec2.
+    /// </summary>
     public class Vec2f : GLFloatVariable
     {
         private float _X, _Y;
@@ -133,7 +172,7 @@ namespace ShaderDebugger
             set { _Y = value; NotifyPropertyChanged(); }
         }
 
-        public override GLComponentCount GetGLComponentCount()
+        protected override GLComponentCount GetGLComponentCount()
         {
             return GLComponentCount.Two;
         }
@@ -144,6 +183,9 @@ namespace ShaderDebugger
         }
     }
 
+    /// <summary>
+    /// GLSL variable vec3.
+    /// </summary>
     public class Vec3f : GLFloatVariable
     {
         private float _X, _Y, _Z;
@@ -166,7 +208,7 @@ namespace ShaderDebugger
             set { _Z = value; NotifyPropertyChanged(); }
         }
 
-        public override GLComponentCount GetGLComponentCount()
+        protected override GLComponentCount GetGLComponentCount()
         {
             return GLComponentCount.Three;
         }
@@ -177,6 +219,9 @@ namespace ShaderDebugger
         }
     }
 
+    /// <summary>
+    /// GLSL variable vec4.
+    /// </summary>
     public class Vec4f : GLFloatVariable
     {
         private float _X, _Y, _Z, _W;
@@ -205,7 +250,7 @@ namespace ShaderDebugger
             set { _W = value; NotifyPropertyChanged(); }
         }
 
-        public override GLComponentCount GetGLComponentCount()
+        protected override GLComponentCount GetGLComponentCount()
         {
             return GLComponentCount.Four;
         }
@@ -221,6 +266,9 @@ namespace ShaderDebugger
     // VARIABLE CREATION
     // ======================================================================================================
 
+    /// <summary>
+    /// Factory class that makes GLVariable.
+    /// </summary>
     public static class VariableMaker
     {
         delegate GLVariable VariableCreator();
@@ -236,11 +284,19 @@ namespace ShaderDebugger
             creatorsDictionary.Add(GLType.VEC4, () => { return new Vec4f(); });
         }
 
+        /// <summary>
+        /// Gets all GLSL types for which a variable can be created.
+        /// </summary>
         public static ICollection<GLType> GetSupportedTypes()
         {
             return creatorsDictionary.Keys;
         }
 
+        /// <summary>
+        /// Makes variable of specified type.
+        /// </summary>
+        /// <param name="type">Type of variable to be created. It should be one of the supported types
+        /// </param>
         public static GLVariable Make(GLType type)
         {
             VariableCreator creator;

@@ -9,12 +9,19 @@ using System.Collections.ObjectModel;
 
 namespace ShaderDebugger
 {
+    /// <summary>
+    /// Interface for classes that need to be initialized with some data.
+    /// </summary>
+    /// <typeparam name="T">Initialization data type.</typeparam>
     interface IInitable<T>
     {
         void Init(T initInfo);
         bool IsInitialized();
     }
 
+    /// <summary>
+    /// Describes the state of OpenGL shader-program compilation.
+    /// </summary>
     [Flags]
     enum ShaderProgramState
     {
@@ -24,11 +31,18 @@ namespace ShaderDebugger
         VerticesChanged = 8
     }
 
+    /// <summary>
+    /// Describes mode that OpenGL uses to costruct its primitives from array of vertices.
+    /// </summary>
     public enum PrimitiveMode
     {
         Triangles, TriangleStrip, TriangleFan, LineStrip, LineLoop, Points
     }
 
+    /// <summary>
+    /// Core component of the whole application. This class takes care of all the actual rendering,
+    /// buffering, etc.
+    /// </summary>
     public class Core : NotifyPropertyChangedBase, IInitable<OpenGL>
     {
         // ==================================================================================================
@@ -48,12 +62,12 @@ namespace ShaderDebugger
 
         // OTHER FIELDS
 
-        private OpenGL gl;
+        private OpenGL gl;                  //< Cached OpenGL context.
         private ShaderProgram program;
         private ShaderProgramState state;
 
-        private uint mainVAO = 0;
-        private uint floatVBO = 0;
+        private uint mainVAO = 0;           //< Main VertexArrayObject.
+        private uint floatVBO = 0;          //< VertexBufferObject that houses all the float data.
 
 
         // ==================================================================================================
@@ -292,6 +306,9 @@ namespace ShaderDebugger
             ClearColor = new Vec3f() { X = 0.1f, Y = 0.1f, Z = 0.1f };
         }
 
+        /// <summary>
+        /// Generates VAOs and VBOs to be used by this class.
+        /// </summary>
         public void GenerateBuffers()
         {
             uint[] temp = new uint[1];
@@ -322,11 +339,17 @@ namespace ShaderDebugger
             return (gl != null);
         }
 
+        /// <summary>
+        /// Gets location of uniform specified by name from OpenGL.
+        /// </summary>
         private int GetUniformLocation(string uniformName)
         {
             return program.GetUniformLocation(gl, uniformName);
         }
 
+        /// <summary>
+        /// Gets location of attribute specified by name from OpenGL.
+        /// </summary>
         private int GetAttributeLocation(string attributeName)
         {
             return gl.GetAttribLocation(program.ShaderProgramObject, attributeName);
@@ -481,6 +504,9 @@ namespace ShaderDebugger
             state = ShaderProgramState.Valid;
         }
 
+        /// <summary>
+        /// Translates my OpenGL mode enum to OpenGL constant.
+        /// </summary>
         private uint GetOpenGLMode()
         {
             switch (Mode)
@@ -508,6 +534,11 @@ namespace ShaderDebugger
             }
         }
 
+        /// <summary>
+        /// Actual rendering call.
+        /// </summary>
+        /// <param name="width">Width of the viewport.</param>
+        /// <param name="height">Height of the viewport.</param>
         public void Render(int width, int height)
         {
             CheckValidity();

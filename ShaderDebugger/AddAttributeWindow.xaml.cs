@@ -6,12 +6,14 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Globalization;
 
 
 namespace ShaderDebugger
 {
     /// <summary>
-    /// Interaction logic for AddUniformWindow.xaml
+    /// This window is used for creation of new attributes. It contains interaction logic for 
+    /// AddAttributeWindow.xaml
     /// </summary>
     public partial class AddAttributeWindow : Window, INotifyPropertyChanged
     {
@@ -19,6 +21,9 @@ namespace ShaderDebugger
         // INOTIFYPROPERTYCHANGED STUFF
         // ==================================================================================================
 
+        /// <summary>
+        /// Event that is invoked when a property of this class is changed.
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
@@ -42,20 +47,32 @@ namespace ShaderDebugger
         // PROPERTIES
         // ==================================================================================================
 
-        public OpenGLIdentifierValidationRule NameValidationRule { get; private set; }
+        private OpenGLIdentifierValidationRule NameValidationRule { get; set; }
+
+        /// <summary>
+        /// This property stores the new AttributeInfo instance created by this window. If this property is
+        /// null it means this window was canceled.
+        /// </summary>
         public AttributeInfo NewAttribute { get; set; }
 
+        /// <summary>
+        /// Name of the attribute being created.
+        /// </summary>
         public string NewAttributeName
         {
             get { return _NewAttributeName; }
             set
             {
                 _NewAttributeName = value;
-                IsNewAttributeNameValid = NameValidationRule.Validate(_NewAttributeName, System.Globalization.CultureInfo.CurrentUICulture).IsValid;
+                IsNewAttributeNameValid = 
+                    NameValidationRule.Validate(_NewAttributeName, CultureInfo.CurrentUICulture).IsValid;
                 NotifyPropertyChanged();
             }
         }
 
+        /// <summary>
+        /// Tells whether the new name is valid name for OpenGL attribute.
+        /// </summary>
         public bool IsNewAttributeNameValid
         {
             get { return _IsNewAttributeNameValid; }
