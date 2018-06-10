@@ -103,6 +103,9 @@ namespace ShaderDebugger
     // OPENGL VARIABLES
     // ======================================================================================================
 
+    /// <summary>
+    /// Represents general GLSL variable.
+    /// </summary>
     public abstract class GLVariable : NotifyPropertyChangedBase
     {
         protected abstract GLBaseType GetBaseGLType();
@@ -124,6 +127,9 @@ namespace ShaderDebugger
         public abstract void SetAsUniform(OpenGL gl, int location);
     }
 
+    /// <summary>
+    /// Float based GLSL variable.
+    /// </summary>
     public abstract class GLFloatVariable : GLVariable
     {
         protected override GLBaseType GetBaseGLType()
@@ -133,7 +139,7 @@ namespace ShaderDebugger
     }
 
     /// <summary>
-    /// Float based GLSL variable.
+    /// GLSL variable float.
     /// </summary>
     public class Float : GLFloatVariable
     {

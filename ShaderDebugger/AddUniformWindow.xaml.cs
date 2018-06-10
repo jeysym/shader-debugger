@@ -12,8 +12,8 @@ using System.Globalization;
 namespace ShaderDebugger
 {
     /// <summary>
-    /// This window is used for creation of new attributes. It contains interaction logic for 
-    /// AddAttributeWindow.xaml
+    /// This window is used for creation of new uniforms. It contains interaction logic for 
+    /// AddUniformWindow.xaml
     /// </summary>
     public partial class AddUniformWindow : Window, INotifyPropertyChanged
     {
