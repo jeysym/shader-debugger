@@ -11,6 +11,9 @@ namespace ShaderDebugger
     /// </summary>
     public abstract class NotifyPropertyChangedBase : INotifyPropertyChanged
     {
+        /// <summary>
+        /// Derived classes should call this event when their properties are changed.
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>

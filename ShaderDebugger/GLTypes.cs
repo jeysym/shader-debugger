@@ -92,9 +92,24 @@ namespace ShaderDebugger
         // THE KNOWN GLSL TYPES
         // ==================================================================================================
 
+        /// <summary>
+        /// GLSL "float" type.
+        /// </summary>
         public static GLType FLOAT = new GLType(GLBaseType.Float, GLComponentCount.One);
+
+        /// <summary>
+        /// GLSL "vec2" type.
+        /// </summary>
         public static GLType VEC2 = new GLType(GLBaseType.Float, GLComponentCount.Two);
+
+        /// <summary>
+        /// GLSL "vec3" type.
+        /// </summary>
         public static GLType VEC3 = new GLType(GLBaseType.Float, GLComponentCount.Three);
+
+        /// <summary>
+        /// GLSL "vec4" type.
+        /// </summary>
         public static GLType VEC4 = new GLType(GLBaseType.Float, GLComponentCount.Four);
     }
 
@@ -145,6 +160,9 @@ namespace ShaderDebugger
     {
         private float _Value;
 
+        /// <summary>
+        /// Value of the variable.
+        /// </summary>
         public float Value {
             get { return _Value; }
             set { _Value = value; NotifyPropertyChanged(); }
@@ -168,11 +186,17 @@ namespace ShaderDebugger
     {
         private float _X, _Y;
 
+        /// <summary>
+        /// X coordiante value.
+        /// </summary>
         public float X {
             get { return _X; }
             set { _X = value;  NotifyPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Y coordiante value.
+        /// </summary>
         public float Y {
             get { return _Y; }
             set { _Y = value; NotifyPropertyChanged(); }
@@ -196,18 +220,27 @@ namespace ShaderDebugger
     {
         private float _X, _Y, _Z;
 
+        /// <summary>
+        /// X coordiante value.
+        /// </summary>
         public float X
         {
             get { return _X; }
             set { _X = value; NotifyPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Y coordiante value.
+        /// </summary>
         public float Y
         {
             get { return _Y; }
             set { _Y = value; NotifyPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Z coordiante value.
+        /// </summary>
         public float Z
         {
             get { return _Z; }
@@ -232,24 +265,36 @@ namespace ShaderDebugger
     {
         private float _X, _Y, _Z, _W;
 
+        /// <summary>
+        /// X coordiante value.
+        /// </summary>
         public float X
         {
             get { return _X; }
             set { _X = value; NotifyPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Y coordiante value.
+        /// </summary>
         public float Y
         {
             get { return _Y; }
             set { _Y = value; NotifyPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Z coordiante value.
+        /// </summary>
         public float Z
         {
             get { return _Z; }
             set { _Z = value; NotifyPropertyChanged(); }
         }
 
+        /// <summary>
+        /// W coordiante value.
+        /// </summary>
         public float W
         {
             get { return _W; }
