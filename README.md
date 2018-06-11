@@ -12,9 +12,9 @@ This application provides an easy user interface for shader code editing, creati
 uniforms to be used by the shaders. It shows the output message of GLSL compiler and linker,
 so it can be used to debug errors in shaders.
 
-How to build
-------------
-Just open the .sln file in Visual Studio and build it.
+User documentation
+------------------
+User documentation can be found [here](user_doc.md).
 
 Used packages
 -------------
