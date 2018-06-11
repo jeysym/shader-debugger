@@ -47,6 +47,14 @@ Here you can edit uniform variables of OpenGL shader program. Uniforms are shown
 * **Type** - type of the uniform
 * **Value** - the actual value of the variable that can be modified
 
+Buttons have the following functions:
+
+* **Delete selected** - delete selected uniforms (rows in grid)
+* **New uniform** - show "New uniform" dialog, which works just like the "New attribute" dialog
+
+### Editing variables
+All displayed variables (whether attribute or uniform) can be edited with their respective controls. For example *vec3* variable control will show its *X*, *Y*, *Z* values as three *spinners*, that can be used to modify the variable.
+
 ### Render output screen
 Here the result of the OpenGL draw call can be seen. The rendered image is updated with every change of input data (shader code, vertices, uniforms). In the upper part you can change the rendering process:
 

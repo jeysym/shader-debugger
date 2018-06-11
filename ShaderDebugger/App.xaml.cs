@@ -27,7 +27,7 @@ namespace ShaderDebugger
     /// * <b>SharpGL</b> - This package is a C# wrapper for OpenGL API. It also provides WPF control for 
     ///                    OpenGL viewport.
     /// * <b>Extended.Wpf.Toolkit</b> - This package contains lots of useful WPF controls, e.g. color pickers
-    ///                                 or numeric updown.
+    ///                                 or spinners.
     /// 
     /// \section author Author
     /// Created by [Jeysym](https://github.com/jeysym/) in 2018.
